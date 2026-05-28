@@ -129,6 +129,21 @@
             margin-bottom: 5px;
         }
 
+        .plot-description {
+            color: #555;
+            font-size: 1em;
+            line-height: 1.6;
+            margin-top: 10px;
+            padding: 15px;
+            background: #fff;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .plot-description strong {
+            color: #667eea;
+        }
+
         .plot-img {
             width: 100%;
             border-radius: 12px;
@@ -182,6 +197,25 @@
             border-left: 4px solid #c62828;
         }
 
+        .intro-section {
+            background: #f8f9fa;
+            padding: 25px 30px;
+            margin: 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .intro-section h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .intro-section p {
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
         .footer {
             background: #2c3e50;
             color: white;
@@ -207,6 +241,20 @@
             </button>
         </div>
 
+        <div class="intro-section">
+            <h3>About This Dashboard</h3>
+            <p>
+                This dashboard shows real-time data from <strong>CAISO</strong> (California Independent System Operator),
+                the organization that manages California's power grid and electricity market. CAISO ensures that
+                electricity supply matches demand 24/7 across the state.
+            </p>
+            <p>
+                The data below updates every 10 minutes and shows: electricity prices, where power comes from
+                (solar, wind, natural gas, etc.), and how much electricity Californians are using right now.
+                Each chart includes an explanation to help you understand what you're looking at.
+            </p>
+        </div>
+
         <div id="loading" class="loading">
             <div class="spinner"></div>
             <p>Loading live data from CAISO OASIS API...</p>
@@ -222,6 +270,13 @@
                         <h2>Locational Marginal Price (LMP)</h2>
                     </div>
                 </div>
+                <div class="plot-description">
+                    <strong>What you're seeing:</strong> The price of electricity in California right now, broken down into three parts.
+                    <br><br>
+                    <strong>Why it matters:</strong> The total price (purple line) shows what it costs to deliver one megawatt-hour of electricity. This price changes throughout the day based on demand, available power plants, and transmission constraints. Higher prices usually mean high demand or limited supply.
+                    <br><br>
+                    <strong>The three components:</strong> Energy cost (blue) is the basic cost of generating power. Congestion (orange) is added when power lines are crowded. Loss (green) accounts for electricity lost during transmission.
+                </div>
                 <img id="plot-lmp" class="plot-img" alt="LMP Components">
             </div>
 
@@ -231,6 +286,13 @@
                     <div class="plot-title">
                         <h2>Trading Hub Comparison</h2>
                     </div>
+                </div>
+                <div class="plot-description">
+                    <strong>What you're seeing:</strong> Electricity prices at three major regions in California: NP15 (Northern California), SP15 (Southern California), and ZP26 (Central California).
+                    <br><br>
+                    <strong>Why it matters:</strong> Prices vary across California because some areas have more power plants or face different demand patterns. When one region has much higher prices than others, it often indicates local congestion or supply issues in that area.
+                    <br><br>
+                    <strong>What to look for:</strong> Generally, prices move together. Big gaps between regions indicate transmission bottlenecks or local supply constraints.
                 </div>
                 <img id="plot-hubs" class="plot-img" alt="Trading Hubs">
             </div>
@@ -242,6 +304,13 @@
                         <h2>Generation Mix and Duck Curve</h2>
                     </div>
                 </div>
+                <div class="plot-description">
+                    <strong>What you're seeing:</strong> Where California's electricity comes from hour by hour. Each colored layer represents a different power source stacked on top of each other.
+                    <br><br>
+                    <strong>Why it matters:</strong> This shows the famous "duck curve" - solar power surges during the day (causing the belly dip), then drops off at sunset (the steep ramp-up). Natural gas plants have to quickly ramp up when solar disappears, which is expensive and challenging.
+                    <br><br>
+                    <strong>What to look for:</strong> Watch solar (yellow) spike midday and disappear at sunset. See how natural gas (blue) fills the gap. Nuclear and hydro provide steady baseload power throughout.
+                </div>
                 <img id="plot-fuel-stack" class="plot-img" alt="Fuel Mix Stack">
             </div>
 
@@ -252,6 +321,13 @@
                         <h2>Average Generation Portfolio</h2>
                     </div>
                 </div>
+                <div class="plot-description">
+                    <strong>What you're seeing:</strong> A pie chart showing the average percentage breakdown of California's electricity sources over the past 12 hours.
+                    <br><br>
+                    <strong>Why it matters:</strong> This gives you a quick snapshot of California's overall energy mix. It shows how diverse (or dependent) the state is on different power sources.
+                    <br><br>
+                    <strong>California's energy transition:</strong> You'll typically see significant renewable energy (solar, wind, hydro) combined with natural gas as the flexible backup. The mix changes seasonally and by time of day.
+                </div>
                 <img id="plot-fuel-pie" class="plot-img" alt="Fuel Mix Pie">
             </div>
 
@@ -261,6 +337,13 @@
                     <div class="plot-title">
                         <h2>System Load Profile</h2>
                     </div>
+                </div>
+                <div class="plot-description">
+                    <strong>What you're seeing:</strong> Total electricity demand (consumption) across California throughout the day, measured in megawatts.
+                    <br><br>
+                    <strong>Why it matters:</strong> This shows when Californians use the most electricity. Demand typically peaks in late afternoon and early evening when people come home, turn on air conditioning, cook dinner, and use appliances.
+                    <br><br>
+                    <strong>The daily pattern:</strong> Low demand at night when people sleep, rises in the morning, plateaus during the day, and peaks in the evening. Summer peaks are higher due to air conditioning. This demand must be matched exactly by generation at all times.
                 </div>
                 <img id="plot-load" class="plot-img" alt="Load Profile">
             </div>
