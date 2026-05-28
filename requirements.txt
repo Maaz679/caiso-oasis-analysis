@@ -6,3 +6,5 @@ scipy
 jupyter
 python-dotenv
 requests
+flask
+gunicorn

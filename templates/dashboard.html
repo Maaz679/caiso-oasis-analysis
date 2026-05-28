@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAISO Market Analysis - Live Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .live-indicator {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .plot-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .plot-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .plot-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .plot-title {
+            flex: 1;
+            margin-left: 20px;
+        }
+
+        .plot-title h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .plot-img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-bar {
+            background: #e8f5e9;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #4caf50;
+        }
+
+        .status-bar .last-update {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #c62828;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CAISO Market Analysis Dashboard</h1>
+            <p>Live California electricity market data and economic modeling</p>
+            <div class="live-indicator">LIVE DATA</div>
+        </div>
+
+        <div class="status-bar">
+            <div class="last-update">
+                Last Updated: <span id="last-updated">{{ last_updated }}</span>
+            </div>
+            <button class="refresh-btn" onclick="loadPlots()" id="refresh-btn">
+                Refresh Data
+            </button>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading live data from CAISO OASIS API...</p>
+        </div>
+
+        <div id="error-message" style="display: none;"></div>
+
+        <div id="content" class="content" style="display: none;">
+            <div class="plot-section">
+                <div class="plot-header">
+                    <div class="plot-number">1</div>
+                    <div class="plot-title">
+                        <h2>Locational Marginal Price (LMP)</h2>
+                    </div>
+                </div>
+                <img id="plot-lmp" class="plot-img" alt="LMP Components">
+            </div>
+
+            <div class="plot-section">
+                <div class="plot-header">
+                    <div class="plot-number">2</div>
+                    <div class="plot-title">
+                        <h2>Trading Hub Comparison</h2>
+                    </div>
+                </div>
+                <img id="plot-hubs" class="plot-img" alt="Trading Hubs">
+            </div>
+
+            <div class="plot-section">
+                <div class="plot-header">
+                    <div class="plot-number">3</div>
+                    <div class="plot-title">
+                        <h2>Generation Mix and Duck Curve</h2>
+                    </div>
+                </div>
+                <img id="plot-fuel-stack" class="plot-img" alt="Fuel Mix Stack">
+            </div>
+
+            <div class="plot-section">
+                <div class="plot-header">
+                    <div class="plot-number">4</div>
+                    <div class="plot-title">
+                        <h2>Average Generation Portfolio</h2>
+                    </div>
+                </div>
+                <img id="plot-fuel-pie" class="plot-img" alt="Fuel Mix Pie">
+            </div>
+
+            <div class="plot-section">
+                <div class="plot-header">
+                    <div class="plot-number">5</div>
+                    <div class="plot-title">
+                        <h2>System Load Profile</h2>
+                    </div>
+                </div>
+                <img id="plot-load" class="plot-img" alt="Load Profile">
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>CAISO OASIS Analysis Project</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                Built with Python, Flask, gridstatus, matplotlib, pandas
+            </p>
+        </div>
+    </div>
+
+    <script>
+        async function loadPlots() {
+            const loadingDiv = document.getElementById('loading');
+            const contentDiv = document.getElementById('content');
+            const errorDiv = document.getElementById('error-message');
+            const refreshBtn = document.getElementById('refresh-btn');
+
+            // Show loading
+            loadingDiv.style.display = 'block';
+            contentDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = 'Loading...';
+
+            try {
+                const response = await fetch('/api/plots');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // Update plots
+                    document.getElementById('plot-lmp').src = data.plots.lmp_components;
+                    document.getElementById('plot-hubs').src = data.plots.trading_hubs;
+                    document.getElementById('plot-fuel-stack').src = data.plots.fuel_mix_stack;
+                    document.getElementById('plot-fuel-pie').src = data.plots.fuel_mix_pie;
+                    document.getElementById('plot-load').src = data.plots.load_profile;
+
+                    // Update timestamp
+                    const timestamp = new Date(data.timestamp);
+                    document.getElementById('last-updated').textContent = timestamp.toLocaleString();
+
+                    // Show content
+                    loadingDiv.style.display = 'none';
+                    contentDiv.style.display = 'block';
+                } else {
+                    throw new Error(data.message || 'Failed to load data');
+                }
+            } catch (error) {
+                console.error('Error loading plots:', error);
+                errorDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Error Loading Data</h3>
+                        <p>${error.message}</p>
+                        <p>Please try refreshing the page or check your connection to the CAISO OASIS API.</p>
+                    </div>
+                `;
+                errorDiv.style.display = 'block';
+                loadingDiv.style.display = 'none';
+            } finally {
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = 'Refresh Data';
+            }
+        }
+
+        // Load plots on page load
+        window.addEventListener('load', loadPlots);
+
+        // Auto-refresh every 10 minutes
+        setInterval(loadPlots, 10 * 60 * 1000);
+    </script>
+</body>
+</html>
