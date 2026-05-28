@@ -267,7 +267,7 @@ def plot_fuel_mix_pie(fuel_df: pd.DataFrame):
     """
     Clean pie chart of average fuel mix.
     """
-    fig, ax = plt.subplots(figsize=(14, 9))
+    fig, ax = plt.subplots(figsize=(16, 10))
 
     # Calculate averages
     avg_by_fuel = fuel_df.groupby('fuel_type')['generation_mw'].mean()
@@ -282,26 +282,35 @@ def plot_fuel_mix_pie(fuel_df: pd.DataFrame):
     }
     colors = [fuel_colors.get(fuel, '#7f8c8d') for fuel in avg_by_fuel.index]
 
-    # Create pie chart with better styling
+    # Create pie chart without labels (use legend instead)
     wedges, texts, autotexts = ax.pie(avg_by_fuel.values,
-                                       labels=avg_by_fuel.index,
+                                       labels=None,  # Remove labels to avoid overlap
                                        autopct='%1.1f%%',
                                        colors=colors,
                                        startangle=90,
-                                       textprops={'fontsize': 11, 'weight': 'bold'},
-                                       pctdistance=0.85,
-                                       explode=[0.05 if i == 0 else 0 for i in range(len(avg_by_fuel))])
+                                       textprops={'fontsize': 12, 'weight': 'bold'},
+                                       pctdistance=0.82,
+                                       explode=[0.08 if i == 0 else 0 for i in range(len(avg_by_fuel))])
 
     # Make percentage text white and bold
     for autotext in autotexts:
         autotext.set_color('white')
-        autotext.set_fontsize(11)
+        autotext.set_fontsize(12)
         autotext.set_weight('bold')
 
-    # Make labels bold
-    for text in texts:
-        text.set_fontsize(12)
-        text.set_weight('bold')
+    # Create legend with fuel names and MW values
+    legend_labels = [f'{fuel}: {mw:.0f} MW ({mw/avg_by_fuel.sum()*100:.1f}%)'
+                     for fuel, mw in avg_by_fuel.items()]
+
+    ax.legend(wedges, legend_labels,
+              title='Generation Sources',
+              loc='center left',
+              bbox_to_anchor=(1, 0, 0.5, 1),
+              fontsize=11,
+              title_fontsize=13,
+              frameon=True,
+              fancybox=True,
+              shadow=True)
 
     ax.set_title('Average California Generation Mix',
                  pad=20, fontweight='bold', fontsize=16, color=COLORS['primary'])
@@ -311,8 +320,8 @@ def plot_fuel_mix_pie(fuel_df: pd.DataFrame):
     centre_circle = plt.Circle((0, 0), 0.70, fc='white', linewidth=2, edgecolor='#dee2e6')
     ax.add_artist(centre_circle)
     ax.text(0, 0.05, f'{total_gen:.0f} MW', ha='center', va='center',
-            fontsize=20, fontweight='bold', color=COLORS['primary'])
-    ax.text(0, -0.15, 'Average\nGeneration', ha='center', va='center',
+            fontsize=22, fontweight='bold', color=COLORS['primary'])
+    ax.text(0, -0.15, 'Total Average\nGeneration', ha='center', va='center',
             fontsize=11, style='italic', color='#555')
 
     plt.tight_layout()
