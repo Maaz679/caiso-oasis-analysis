@@ -3,116 +3,602 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAISO OASIS Analysis - Visualizations</title>
+    <title>CAISO Market Analysis Dashboard</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 40px;
-        }
-        .plot-container {
             background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
-        .plot-title {
-            color: #34495e;
-            font-size: 1.3em;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-        img {
-            width: 100%;
-            height: auto;
-            border-radius: 4px;
-        }
-        .info-box {
-            background: #e8f4f8;
-            border-left: 4px solid #3498db;
-            padding: 15px;
-            margin-bottom: 30px;
-            border-radius: 4px;
-        }
-        .timestamp {
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
             text-align: center;
-            color: #95a5a6;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        /* Navigation */
+        .nav {
+            background: #f8f9fa;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            border-bottom: 3px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Info Bar */
+        .info-bar {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 25px;
+            margin: 30px 30px 0 30px;
+            border-radius: 15px;
+            border-left: 5px solid #4caf50;
+        }
+
+        .info-bar h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .info-item strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
             font-size: 0.9em;
-            margin-top: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item span {
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        /* Content */
+        .content {
+            padding: 30px;
+        }
+
+        .plot-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .plot-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .plot-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .plot-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .plot-title {
+            flex: 1;
+            margin-left: 20px;
+        }
+
+        .plot-title h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .plot-title .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .plot-img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .plot-img:hover {
+            transform: scale(1.02);
+        }
+
+        .plot-description {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            margin-top: 15px;
+        }
+
+        .plot-description h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .plot-description p {
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .plot-description ul {
+            margin-top: 10px;
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .plot-description li {
+            margin: 5px 0;
+        }
+
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .footer h3 {
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .footer-link:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .timestamp {
+            margin-top: 20px;
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox img {
+            max-width: 95%;
+            max-height: 95%;
+            border-radius: 10px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .lightbox-close:hover {
+            transform: scale(1.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .nav {
+                padding: 15px;
+            }
+
+            .nav-btn {
+                padding: 10px 16px;
+                font-size: 0.9em;
+            }
+
+            .plot-title h2 {
+                font-size: 1.3em;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: 600;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
         }
     </style>
 </head>
 <body>
-    <h1>CAISO OASIS Market Analysis</h1>
-    <div class="subtitle">Real-time electricity market data visualization</div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>⚡ CAISO Market Analysis Dashboard</h1>
+            <p>Real-time California electricity market data & economic modeling</p>
+        </div>
 
-    <div class="info-box">
-        <strong>📊 Data Source:</strong> CAISO OASIS API via gridstatus library<br>
-        <strong>📈 Models:</strong> Kirschen & Strbac "Fundamentals of Power System Economics"<br>
-        <strong>🔄 Update:</strong> Run <code>python notebooks/visualize_data.py</code> to refresh
+        <!-- Navigation -->
+        <nav class="nav">
+            <a href="#lmp" class="nav-btn">📊 LMP Analysis</a>
+            <a href="#hubs" class="nav-btn">🌐 Trading Hubs</a>
+            <a href="#fuel" class="nav-btn">⚡ Fuel Mix</a>
+            <a href="#generation" class="nav-btn">🔋 Generation</a>
+            <a href="#load" class="nav-btn">📈 Load Profile</a>
+        </nav>
+
+        <!-- Info Bar -->
+        <div class="info-bar">
+            <h3>📋 Dashboard Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Data Source</strong>
+                    <span>CAISO OASIS API</span>
+                </div>
+                <div class="info-item">
+                    <strong>Library</strong>
+                    <span>gridstatus + Python</span>
+                </div>
+                <div class="info-item">
+                    <strong>Economic Models</strong>
+                    <span>Kirschen & Strbac (Ch. 3-5)</span>
+                </div>
+                <div class="info-item">
+                    <strong>Update Data</strong>
+                    <span>python notebooks/visualize_data.py</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Plot 1: LMP Components -->
+            <div class="plot-section" id="lmp">
+                <div class="plot-header">
+                    <div class="plot-number">1</div>
+                    <div class="plot-title">
+                        <h2>Locational Marginal Price (LMP)</h2>
+                        <span class="badge">Chapter 5: LMP Decomposition</span>
+                    </div>
+                </div>
+                <img src="lmp_components.png" alt="LMP Components" class="plot-img" onclick="openLightbox(this)">
+                <div class="plot-description">
+                    <h4>💡 What This Shows</h4>
+                    <p>LMP represents the cost of delivering one additional MW of electricity at a specific location. This visualization breaks it down into three key components:</p>
+                    <ul>
+                        <li><strong>Energy Component (Green):</strong> Base cost of generating electricity (~81%)</li>
+                        <li><strong>Congestion Component (Orange):</strong> Cost due to transmission constraints (~15%)</li>
+                        <li><strong>Loss Component (Red):</strong> Cost of electrical losses during transmission (~-3%)</li>
+                    </ul>
+                    <p><strong>Key Insight:</strong> Notice the price spike in morning hours - this is when demand rises but cheap solar hasn't ramped up yet. Negative prices around 3 PM indicate oversupply from solar generation.</p>
+                </div>
+            </div>
+
+            <!-- Plot 2: Trading Hubs -->
+            <div class="plot-section" id="hubs">
+                <div class="plot-header">
+                    <div class="plot-number">2</div>
+                    <div class="plot-title">
+                        <h2>Trading Hub Comparison</h2>
+                        <span class="badge">Regional Price Differences</span>
+                    </div>
+                </div>
+                <img src="trading_hubs.png" alt="Trading Hubs" class="plot-img" onclick="openLightbox(this)">
+                <div class="plot-description">
+                    <h4>🌐 What This Shows</h4>
+                    <p>Compares electricity prices across California's three major trading hubs:</p>
+                    <ul>
+                        <li><strong>NP15 (Northern CA):</strong> Import-constrained region, often higher prices</li>
+                        <li><strong>SP15 (Southern CA):</strong> Major load center near LA</li>
+                        <li><strong>ZP26 (San Diego):</strong> Southern tip, can experience extreme price swings</li>
+                    </ul>
+                    <p><strong>Price Spread Analysis (Bottom Panel):</strong> Shows each hub's deviation from system average. NP15 trading $10-40/MWh above average indicates transmission congestion from north to south.</p>
+                </div>
+            </div>
+
+            <!-- Plot 3: Fuel Mix Stack -->
+            <div class="plot-section" id="fuel">
+                <div class="plot-header">
+                    <div class="plot-number">3</div>
+                    <div class="plot-title">
+                        <h2>Generation Mix & Duck Curve</h2>
+                        <span class="badge">Chapter 3: Economic Dispatch</span>
+                    </div>
+                </div>
+                <img src="fuel_mix_stack.png" alt="Fuel Mix Stack" class="plot-img" onclick="openLightbox(this)">
+                <div class="plot-description">
+                    <h4>⚡ What This Shows</h4>
+                    <p>California's generation portfolio stacked by fuel type, plus battery storage activity:</p>
+                    <ul>
+                        <li><strong>Solar (Yellow):</strong> Dominates midday, creating the famous "duck curve"</li>
+                        <li><strong>Baseload (Blue/Teal):</strong> Nuclear and hydro provide constant generation</li>
+                        <li><strong>Flexible (Red/Green):</strong> Natural gas and wind adjust to demand</li>
+                        <li><strong>Batteries (Purple/Pink):</strong> Charge during solar surplus, discharge during peak</li>
+                    </ul>
+                    <p><strong>Duck Curve:</strong> The bottom chart shows batteries charging ~7,000 MW during midday solar oversupply and discharging ~8,000 MW during evening peak when solar drops off.</p>
+                </div>
+            </div>
+
+            <!-- Plot 4: Fuel Mix Pie -->
+            <div class="plot-section" id="generation">
+                <div class="plot-header">
+                    <div class="plot-number">4</div>
+                    <div class="plot-title">
+                        <h2>Average Generation Portfolio</h2>
+                        <span class="badge">Merit Order Stack</span>
+                    </div>
+                </div>
+                <img src="fuel_mix_pie.png" alt="Fuel Mix Pie" class="plot-img" onclick="openLightbox(this)">
+                <div class="plot-description">
+                    <h4>🔋 What This Shows</h4>
+                    <p>California's average generation mix over the analysis period (23,049 MW total):</p>
+                    <ul>
+                        <li><strong>Solar: 30.3%</strong> - Leading renewable source</li>
+                        <li><strong>Imports: 19.3%</strong> - Electricity from neighboring states</li>
+                        <li><strong>Large Hydro: 13.3%</strong> - Major renewable baseload</li>
+                        <li><strong>Natural Gas: 10.9%</strong> - Flexible generation for peaks</li>
+                        <li><strong>Wind: 10.1%</strong> - Growing renewable source</li>
+                        <li><strong>Nuclear: 10.1%</strong> - Clean baseload (Diablo Canyon)</li>
+                    </ul>
+                    <p><strong>California's Clean Energy:</strong> Over 60% of generation is carbon-free (renewables + nuclear + large hydro).</p>
+                </div>
+            </div>
+
+            <!-- Plot 5: Load Profile -->
+            <div class="plot-section" id="load">
+                <div class="plot-header">
+                    <div class="plot-number">5</div>
+                    <div class="plot-title">
+                        <h2>System Load Profile</h2>
+                        <span class="badge">Demand Analysis</span>
+                    </div>
+                </div>
+                <img src="load_profile.png" alt="Load Profile" class="plot-img" onclick="openLightbox(this)">
+                <div class="plot-description">
+                    <h4>📈 What This Shows</h4>
+                    <p>Total electricity demand across California's grid with key statistics:</p>
+                    <ul>
+                        <li><strong>Minimum Load:</strong> ~18,000 MW (overnight hours)</li>
+                        <li><strong>Maximum Load:</strong> ~27,000 MW (evening peak)</li>
+                        <li><strong>Average Load:</strong> ~22,000 MW</li>
+                        <li><strong>Peak/Min Ratio:</strong> 1.47x (moderate daily variation)</li>
+                    </ul>
+                    <p><strong>Load Pattern:</strong> Classic dual-peak pattern with morning ramp-up (7-9 AM) and evening peak (5-8 PM) as people return home and solar generation declines.</p>
+                </div>
+            </div>
+
+            <div class="scroll-indicator">
+                ↑ Scroll up to navigate between visualizations ↑
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <h3>🔗 Project Links</h3>
+            <div class="footer-links">
+                <a href="https://github.com/Maaz679/caiso-oasis-analysis" class="footer-link" target="_blank">
+                    📂 GitHub Repository
+                </a>
+                <a href="https://github.com/Maaz679/caiso-oasis-analysis/tree/main/notebooks" class="footer-link" target="_blank">
+                    📓 Jupyter Notebooks
+                </a>
+                <a href="https://github.com/Maaz679/caiso-oasis-analysis/blob/main/README.md" class="footer-link" target="_blank">
+                    📖 Documentation
+                </a>
+                <a href="http://www.caiso.com/Pages/default.aspx" class="footer-link" target="_blank">
+                    🌐 CAISO Official
+                </a>
+            </div>
+            <div class="timestamp">
+                <p>CAISO OASIS Analysis Project • Updated May 28, 2026</p>
+                <p style="margin-top: 10px; font-size: 0.85em;">
+                    Built with Python • gridstatus • matplotlib • pandas
+                </p>
+            </div>
+        </div>
     </div>
 
-    <div class="plot-container">
-        <div class="plot-title">1. Locational Marginal Price (LMP) Components</div>
-        <img src="lmp_components.png" alt="LMP Components">
-        <p style="color: #7f8c8d; margin-top: 10px;">
-            Shows total LMP over time (top) and decomposition into energy, congestion, and loss components (bottom).
-            Based on Chapter 5 of Kirschen & Strbac.
-        </p>
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img id="lightbox-img" src="" alt="Enlarged view">
     </div>
 
-    <div class="plot-container">
-        <div class="plot-title">2. Trading Hub Price Comparison</div>
-        <img src="trading_hubs.png" alt="Trading Hubs">
-        <p style="color: #7f8c8d; margin-top: 10px;">
-            Compares prices across three major CAISO trading hubs: NP15 (Northern CA), SP15 (Southern CA),
-            and ZP26 (San Diego). Price differences indicate transmission congestion.
-        </p>
-    </div>
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
 
-    <div class="plot-container">
-        <div class="plot-title">3. Fuel Mix Generation Stack</div>
-        <img src="fuel_mix_stack.png" alt="Fuel Mix Stack">
-        <p style="color: #7f8c8d; margin-top: 10px;">
-            Stacked area chart showing generation by fuel type (top) and battery storage activity (bottom).
-            Notice the "duck curve" - batteries charge during high solar and discharge during evening peak.
-        </p>
-    </div>
+        // Lightbox functionality
+        function openLightbox(img) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = img.src;
+            lightbox.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
 
-    <div class="plot-container">
-        <div class="plot-title">4. Average Generation by Fuel Type</div>
-        <img src="fuel_mix_pie.png" alt="Fuel Mix Pie">
-        <p style="color: #7f8c8d; margin-top: 10px;">
-            Average generation mix showing California's high renewable penetration.
-            Solar leads at ~30%, followed by imports and hydro.
-        </p>
-    </div>
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
 
-    <div class="plot-container">
-        <div class="plot-title">5. System Load Profile</div>
-        <img src="load_profile.png" alt="Load Profile">
-        <p style="color: #7f8c8d; margin-top: 10px;">
-            Total system demand over time with statistics. Shows typical daily load pattern
-            with morning and evening peaks.
-        </p>
-    </div>
+        // Close lightbox on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        });
 
-    <div class="timestamp">
-        Generated: May 28, 2026 | CAISO OASIS Analysis Project
-    </div>
+        // Add scroll-based animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.plot-section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(30px)';
+            section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(section);
+        });
+    </script>
 </body>
 </html>
