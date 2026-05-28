@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAISO OASIS Analysis - Visualizations</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+        }
+        .plot-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .plot-title {
+            color: #34495e;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        .timestamp {
+            text-align: center;
+            color: #95a5a6;
+            font-size: 0.9em;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>CAISO OASIS Market Analysis</h1>
+    <div class="subtitle">Real-time electricity market data visualization</div>
+
+    <div class="info-box">
+        <strong>📊 Data Source:</strong> CAISO OASIS API via gridstatus library<br>
+        <strong>📈 Models:</strong> Kirschen & Strbac "Fundamentals of Power System Economics"<br>
+        <strong>🔄 Update:</strong> Run <code>python notebooks/visualize_data.py</code> to refresh
+    </div>
+
+    <div class="plot-container">
+        <div class="plot-title">1. Locational Marginal Price (LMP) Components</div>
+        <img src="lmp_components.png" alt="LMP Components">
+        <p style="color: #7f8c8d; margin-top: 10px;">
+            Shows total LMP over time (top) and decomposition into energy, congestion, and loss components (bottom).
+            Based on Chapter 5 of Kirschen & Strbac.
+        </p>
+    </div>
+
+    <div class="plot-container">
+        <div class="plot-title">2. Trading Hub Price Comparison</div>
+        <img src="trading_hubs.png" alt="Trading Hubs">
+        <p style="color: #7f8c8d; margin-top: 10px;">
+            Compares prices across three major CAISO trading hubs: NP15 (Northern CA), SP15 (Southern CA),
+            and ZP26 (San Diego). Price differences indicate transmission congestion.
+        </p>
+    </div>
+
+    <div class="plot-container">
+        <div class="plot-title">3. Fuel Mix Generation Stack</div>
+        <img src="fuel_mix_stack.png" alt="Fuel Mix Stack">
+        <p style="color: #7f8c8d; margin-top: 10px;">
+            Stacked area chart showing generation by fuel type (top) and battery storage activity (bottom).
+            Notice the "duck curve" - batteries charge during high solar and discharge during evening peak.
+        </p>
+    </div>
+
+    <div class="plot-container">
+        <div class="plot-title">4. Average Generation by Fuel Type</div>
+        <img src="fuel_mix_pie.png" alt="Fuel Mix Pie">
+        <p style="color: #7f8c8d; margin-top: 10px;">
+            Average generation mix showing California's high renewable penetration.
+            Solar leads at ~30%, followed by imports and hydro.
+        </p>
+    </div>
+
+    <div class="plot-container">
+        <div class="plot-title">5. System Load Profile</div>
+        <img src="load_profile.png" alt="Load Profile">
+        <p style="color: #7f8c8d; margin-top: 10px;">
+            Total system demand over time with statistics. Shows typical daily load pattern
+            with morning and evening peaks.
+        </p>
+    </div>
+
+    <div class="timestamp">
+        Generated: May 28, 2026 | CAISO OASIS Analysis Project
+    </div>
+</body>
+</html>
