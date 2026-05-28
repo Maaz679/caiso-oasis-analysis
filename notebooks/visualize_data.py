@@ -273,19 +273,32 @@ def plot_fuel_mix_pie(fuel_df: pd.DataFrame):
     avg_by_fuel = fuel_df.groupby('fuel_type')['generation_mw'].mean()
     avg_by_fuel = avg_by_fuel[avg_by_fuel > 50].sort_values(ascending=False)
 
+    # Combine small slices (< 2%) into "Other" to prevent visual clutter
+    threshold_pct = 2.0
+    total = avg_by_fuel.sum()
+    large_slices = avg_by_fuel[avg_by_fuel / total * 100 >= threshold_pct]
+    small_slices = avg_by_fuel[avg_by_fuel / total * 100 < threshold_pct]
+
+    if len(small_slices) > 0:
+        # Add "Other" category for small slices
+        other_total = small_slices.sum()
+        large_slices = pd.concat([large_slices, pd.Series({'Other': other_total})])
+
+    avg_by_fuel = large_slices
+
     # Colors
     fuel_colors = {
         'Solar': '#FDB813', 'Wind': '#27ae60', 'Natural Gas': '#e74c3c',
         'Nuclear': '#3498db', 'Large Hydro': '#1abc9c', 'Small Hydro': '#16a085',
         'Imports': '#95a5a6', 'Geothermal': '#d35400', 'Biomass': '#8BC34A',
-        'Biogas': '#7CB342', 'Coal': '#34495e',
+        'Biogas': '#7CB342', 'Coal': '#34495e', 'Other': '#95a5a6',
     }
-    colors = [fuel_colors.get(fuel, '#7f8c8d') for fuel in avg_by_fuel.index]
+    colors = [fuel_colors.get(fuel, '#95a5a6') for fuel in avg_by_fuel.index]
 
-    # Create custom autopct function to only show percentages for slices > 3%
+    # Create custom autopct function to show all percentages clearly
     def make_autopct(values):
         def my_autopct(pct):
-            return f'{pct:.1f}%' if pct > 3 else ''
+            return f'{pct:.1f}%'
         return my_autopct
 
     # Create pie chart without labels (use legend instead)
