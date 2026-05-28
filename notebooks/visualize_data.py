@@ -282,20 +282,26 @@ def plot_fuel_mix_pie(fuel_df: pd.DataFrame):
     }
     colors = [fuel_colors.get(fuel, '#7f8c8d') for fuel in avg_by_fuel.index]
 
+    # Create custom autopct function to only show percentages for slices > 3%
+    def make_autopct(values):
+        def my_autopct(pct):
+            return f'{pct:.1f}%' if pct > 3 else ''
+        return my_autopct
+
     # Create pie chart without labels (use legend instead)
     wedges, texts, autotexts = ax.pie(avg_by_fuel.values,
                                        labels=None,  # Remove labels to avoid overlap
-                                       autopct='%1.1f%%',
+                                       autopct=make_autopct(avg_by_fuel.values),
                                        colors=colors,
                                        startangle=90,
-                                       textprops={'fontsize': 12, 'weight': 'bold'},
+                                       textprops={'fontsize': 13, 'weight': 'bold'},
                                        pctdistance=0.82,
                                        explode=[0.08 if i == 0 else 0 for i in range(len(avg_by_fuel))])
 
     # Make percentage text white and bold
     for autotext in autotexts:
         autotext.set_color('white')
-        autotext.set_fontsize(12)
+        autotext.set_fontsize(13)
         autotext.set_weight('bold')
 
     # Create legend with fuel names and MW values
