@@ -1,0 +1,8 @@
+gridstatus
+pandas
+numpy
+matplotlib
+scipy
+jupyter
+python-dotenv
+requests
