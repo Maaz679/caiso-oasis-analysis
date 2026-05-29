@@ -2,9 +2,11 @@
 
 A live electricity market dashboard that pulls real-time data from the California ISO (CAISO) OASIS API and presents it through interactive visualizations. Built to explore how wholesale power markets work and to apply economic models from power systems theory to real grid data.
 
+**[View the live dashboard](https://caiso-market-dashboard.onrender.com)**
+
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
 ![Flask](https://img.shields.io/badge/Flask-3.x-lightgrey)
-![Plotly](https://img.shields.io/badge/Plotly-5.x-3F4F75)
+![Plotly](https://img.shields.io/badge/Plotly-6.x-3F4F75)
 ![Data](https://img.shields.io/badge/Data-CAISO%20OASIS%20API-orange)
 
 ---
@@ -68,7 +70,8 @@ caiso-oasis-analysis/
 ├── Procfile                Gunicorn start command for Render/Heroku
 ├── render.yaml             Render Blueprint for one-click deployment
 ├── runtime.txt             Python version pin
-└── requirements.txt        Python dependencies
+├── requirements.txt        Python dependencies (dashboard only)
+└── requirements-dev.txt    Additional dependencies for notebooks
 ```
 
 ---

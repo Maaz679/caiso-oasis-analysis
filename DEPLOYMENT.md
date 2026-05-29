@@ -61,6 +61,8 @@ The `Procfile` is already configured with the correct gunicorn command.
 ```bash
 git clone https://github.com/Maaz679/caiso-oasis-analysis.git
 cd caiso-oasis-analysis
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -122,7 +124,7 @@ No variables are required. Optional overrides:
 | Variable | Default | Purpose |
 |---|---|---|
 | `PORT` | `5000` | Port for local dev; most platforms set this automatically |
-| `FLASK_ENV` | `production` | Set to `development` to enable debug mode locally |
+| `FLASK_DEBUG` | `0` | Set to `1` to enable Flask debug mode and auto-reload locally |
 
 ---
 
@@ -130,10 +132,10 @@ No variables are required. Optional overrides:
 
 ### CAISO API timeout on first load
 
-The OASIS API can be slow, especially for large date ranges. The default fetch window is 12 hours. If you see timeouts, reduce it in `app.py`:
+The OASIS API can be slow, especially for large date ranges. The default fetch window is 12 hours. If you see timeouts, reduce it in `app.py`. The variable appears three times (lines 39, 69, and 105) and all three need to match:
 
 ```python
-hours = 6  # line ~39, ~69, ~108 in app.py
+hours = 6  # change in all three route handlers: fetch_data, get_plots, get_stats
 ```
 
 ### 502 Bad Gateway on Render or Heroku
