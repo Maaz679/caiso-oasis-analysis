@@ -133,11 +133,13 @@
             color: #555;
             font-size: 1em;
             line-height: 1.6;
-            margin-top: 10px;
-            padding: 15px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            padding: 20px;
             background: #fff;
             border-left: 4px solid #667eea;
             border-radius: 5px;
+            clear: both;
         }
 
         .plot-description strong {
@@ -270,6 +272,7 @@
                         <h2>Locational Marginal Price (LMP)</h2>
                     </div>
                 </div>
+                <img id="plot-lmp" class="plot-img" alt="LMP Components">
                 <div class="plot-description">
                     <strong>What you're seeing:</strong> The price of electricity in California right now, broken down into three parts.
                     <br><br>
@@ -277,7 +280,6 @@
                     <br><br>
                     <strong>The three components:</strong> Energy cost (blue) is the basic cost of generating power. Congestion (orange) is added when power lines are crowded. Loss (green) accounts for electricity lost during transmission.
                 </div>
-                <img id="plot-lmp" class="plot-img" alt="LMP Components">
             </div>
 
             <div class="plot-section">
@@ -287,6 +289,7 @@
                         <h2>Trading Hub Comparison</h2>
                     </div>
                 </div>
+                <img id="plot-hubs" class="plot-img" alt="Trading Hubs">
                 <div class="plot-description">
                     <strong>What you're seeing:</strong> Electricity prices at three major regions in California: NP15 (Northern California), SP15 (Southern California), and ZP26 (Central California).
                     <br><br>
@@ -294,7 +297,6 @@
                     <br><br>
                     <strong>What to look for:</strong> Generally, prices move together. Big gaps between regions indicate transmission bottlenecks or local supply constraints.
                 </div>
-                <img id="plot-hubs" class="plot-img" alt="Trading Hubs">
             </div>
 
             <div class="plot-section">
@@ -304,6 +306,7 @@
                         <h2>Generation Mix and Duck Curve</h2>
                     </div>
                 </div>
+                <img id="plot-fuel-stack" class="plot-img" alt="Fuel Mix Stack">
                 <div class="plot-description">
                     <strong>What you're seeing:</strong> Where California's electricity comes from hour by hour. Each colored layer represents a different power source stacked on top of each other.
                     <br><br>
@@ -311,7 +314,6 @@
                     <br><br>
                     <strong>What to look for:</strong> Watch solar (yellow) spike midday and disappear at sunset. See how natural gas (blue) fills the gap. Nuclear and hydro provide steady baseload power throughout.
                 </div>
-                <img id="plot-fuel-stack" class="plot-img" alt="Fuel Mix Stack">
             </div>
 
             <div class="plot-section">
@@ -321,6 +323,7 @@
                         <h2>Average Generation Portfolio</h2>
                     </div>
                 </div>
+                <img id="plot-fuel-pie" class="plot-img" alt="Fuel Mix Pie">
                 <div class="plot-description">
                     <strong>What you're seeing:</strong> A pie chart showing the average percentage breakdown of California's electricity sources over the past 12 hours.
                     <br><br>
@@ -328,7 +331,6 @@
                     <br><br>
                     <strong>California's energy transition:</strong> You'll typically see significant renewable energy (solar, wind, hydro) combined with natural gas as the flexible backup. The mix changes seasonally and by time of day.
                 </div>
-                <img id="plot-fuel-pie" class="plot-img" alt="Fuel Mix Pie">
             </div>
 
             <div class="plot-section">
@@ -338,6 +340,7 @@
                         <h2>System Load Profile</h2>
                     </div>
                 </div>
+                <img id="plot-load" class="plot-img" alt="Load Profile">
                 <div class="plot-description">
                     <strong>What you're seeing:</strong> Total electricity demand (consumption) across California throughout the day, measured in megawatts.
                     <br><br>
@@ -345,7 +348,6 @@
                     <br><br>
                     <strong>The daily pattern:</strong> Low demand at night when people sleep, rises in the morning, plateaus during the day, and peaks in the evening. Summer peaks are higher due to air conditioning. This demand must be matched exactly by generation at all times.
                 </div>
-                <img id="plot-load" class="plot-img" alt="Load Profile">
             </div>
         </div>
 
