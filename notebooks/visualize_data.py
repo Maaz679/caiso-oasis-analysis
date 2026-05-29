@@ -28,14 +28,14 @@ plt.rcParams['grid.linestyle'] = '-'
 plt.rcParams['grid.linewidth'] = 0.8
 plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'DejaVu Sans']
-plt.rcParams['font.size'] = 11
-plt.rcParams['axes.labelsize'] = 12
-plt.rcParams['axes.titlesize'] = 14
+plt.rcParams['font.size'] = 12
+plt.rcParams['axes.labelsize'] = 13
+plt.rcParams['axes.titlesize'] = 15
 plt.rcParams['axes.titleweight'] = 'bold'
-plt.rcParams['xtick.labelsize'] = 10
-plt.rcParams['ytick.labelsize'] = 10
-plt.rcParams['legend.fontsize'] = 10
-plt.rcParams['figure.titlesize'] = 16
+plt.rcParams['xtick.labelsize'] = 11
+plt.rcParams['ytick.labelsize'] = 11
+plt.rcParams['legend.fontsize'] = 11
+plt.rcParams['figure.titlesize'] = 17
 plt.rcParams['figure.titleweight'] = 'bold'
 
 
@@ -72,7 +72,7 @@ def plot_lmp_components(lmp_df: pd.DataFrame, location: str = None):
     """
     Clean LMP visualization with component breakdown.
     """
-    fig = plt.figure(figsize=(16, 10))
+    fig = plt.figure(figsize=(14, 8))
     gs = fig.add_gridspec(3, 1, height_ratios=[1.2, 1.5, 0.3], hspace=0.35)
 
     # Filter data
@@ -149,7 +149,7 @@ def plot_trading_hubs_comparison(lmp_df: pd.DataFrame):
     """
     Clean comparison of trading hub prices.
     """
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 10), height_ratios=[2, 1])
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8), height_ratios=[2, 1])
 
     hub_info = {
         'TH_NP15_GEN-APND': {'label': 'NP15 (Northern CA)', 'color': COLORS['secondary']},
@@ -196,7 +196,7 @@ def plot_fuel_mix(fuel_df: pd.DataFrame):
     """
     Clean fuel mix visualization.
     """
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 10), height_ratios=[2.5, 1.5])
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8), height_ratios=[2.5, 1.5])
 
     # Pivot data
     df_wide = fuel_df.pivot(index='timestamp', columns='fuel_type', values='generation_mw')
@@ -267,7 +267,7 @@ def plot_fuel_mix_pie(fuel_df: pd.DataFrame):
     """
     Clean pie chart of average fuel mix.
     """
-    fig, ax = plt.subplots(figsize=(16, 10))
+    fig, ax = plt.subplots(figsize=(12, 8))
 
     # Calculate averages
     avg_by_fuel = fuel_df.groupby('fuel_type')['generation_mw'].mean()
@@ -351,7 +351,7 @@ def plot_load_profile(load_df: pd.DataFrame):
     """
     Clean load profile visualization.
     """
-    fig, ax = plt.subplots(figsize=(16, 7))
+    fig, ax = plt.subplots(figsize=(14, 6))
 
     df = load_df.sort_values('timestamp')
 

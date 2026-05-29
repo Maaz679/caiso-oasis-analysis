@@ -29,9 +29,10 @@ def generate_plot_base64(plot_func, *args):
 
     fig = plot_func(*args)
 
-    # Save to bytes buffer
+    # Save to bytes buffer with padding for better web display
     buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='white')
+    fig.savefig(buf, format='png', dpi=100, bbox_inches='tight',
+                pad_inches=0.5, facecolor='white')
     buf.seek(0)
     plt.close(fig)
 
