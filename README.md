@@ -116,11 +116,19 @@ Constructs the supply stack from generator bids and finds the market clearing pr
 ```bash
 git clone https://github.com/Maaz679/caiso-oasis-analysis.git
 cd caiso-oasis-analysis
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
 
 Open http://localhost:5000. The dashboard fetches live data on load and auto-refreshes every 10 minutes.
+
+If you also want to run the notebooks or exploratory scripts in `notebooks/`, install the dev dependencies instead:
+
+```bash
+pip install -r requirements-dev.txt
+```
 
 ---
 
@@ -217,15 +225,18 @@ The `render.yaml` in this repo pins the Python version, sets the build and start
 
 ## Requirements
 
+Python 3.12 is recommended (pinned in `runtime.txt` for Render).
+
+`requirements.txt` contains only what the Flask dashboard needs:
+
 ```
-Python 3.12
-gridstatus
-pandas
-numpy
-flask
-gunicorn
-plotly
-requests
+gridstatus==0.36.0
+pandas>=2.0
+numpy>=1.24
+plotly>=5.0
+flask>=3.0
+gunicorn>=21.0
+requests>=2.28
 ```
 
-Full pinned list in `requirements.txt`.
+`requirements-dev.txt` extends that with notebook dependencies (`matplotlib`, `scipy`, `jupyter`, `python-dotenv`).

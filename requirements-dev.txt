@@ -1,0 +1,7 @@
+# Additional dependencies for running notebooks and exploratory scripts.
+# Not required to run the Flask dashboard.
+-r requirements.txt
+matplotlib>=3.7
+scipy>=1.11
+jupyter
+python-dotenv
