@@ -3,426 +3,674 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAISO Market Analysis - Live Dashboard</title>
+    <title>CAISO Market Dashboard — Live Data</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --accent:    #6366F1;
+            --accent2:   #8B5CF6;
+            --bg:        #F1F5F9;
+            --surface:   #FFFFFF;
+            --border:    #E2E8F0;
+            --text:      #0F172A;
+            --subtext:   #64748B;
+            --green:     #10B981;
+            --red:       #EF4444;
+            --amber:     #F59E0B;
+            --radius:    16px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+            --shadow-md: 0 4px 16px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,.14), 0 4px 12px rgba(0,0,0,.07);
         }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #2c3e50;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
-            padding: 20px;
+            line-height: 1.5;
         }
 
-        .container {
-            max-width: 1400px;
+        /* ── Header ─────────────────────────────────────────────────────────── */
+        .site-header {
+            background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #312E81 100%);
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,.35);
+        }
+
+        .header-inner {
+            max-width: 1440px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.95;
-        }
-
-        .live-indicator {
-            display: inline-block;
-            background: #4caf50;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            margin-top: 15px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .plot-section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 50px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-
-        .plot-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #667eea;
+            height: 68px;
+            gap: 20px;
         }
 
-        .plot-number {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5em;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(99,102,241,.50);
         }
 
-        .plot-title {
-            flex: 1;
-            margin-left: 20px;
+        .header-brand h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: -0.3px;
         }
 
-        .plot-title h2 {
-            color: #2c3e50;
-            font-size: 1.8em;
-            margin-bottom: 5px;
+        .header-brand p {
+            font-size: 0.75rem;
+            color: #A5B4FC;
+            margin-top: 1px;
         }
 
-        .plot-description {
-            color: #555;
-            font-size: 1em;
-            line-height: 1.6;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            padding: 20px;
-            background: #fff;
-            border-left: 4px solid #667eea;
-            border-radius: 5px;
-            clear: both;
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
-        .plot-description strong {
-            color: #667eea;
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(16,185,129,.18);
+            border: 1px solid rgba(16,185,129,.40);
+            color: #6EE7B7;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
-        .plot-container {
-            width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin: 20px 0;
-            background: white;
-            padding: 10px;
-            min-height: 400px;
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #34D399;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: .5; transform: scale(0.8); }
+        }
+
+        .last-updated-text {
+            font-size: 0.78rem;
+            color: #94A3B8;
         }
 
         .refresh-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 1em;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: opacity .2s, transform .15s;
+            white-space: nowrap;
         }
 
-        .refresh-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        .refresh-btn:hover    { opacity: .88; transform: translateY(-1px); }
+        .refresh-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+        /* ── Main layout ─────────────────────────────────────────────────────── */
+        .main {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 28px 28px 60px;
         }
 
-        .refresh-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        /* ── Stat cards row ──────────────────────────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
         }
 
-        .status-bar {
-            background: #e8f5e9;
-            padding: 15px 30px;
+        .stat-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px 22px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow .2s;
+        }
+
+        .stat-card:hover { box-shadow: var(--shadow-md); }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--card-accent, var(--accent));
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
+        .stat-card.green  { --card-accent: var(--green); }
+        .stat-card.red    { --card-accent: var(--red); }
+        .stat-card.amber  { --card-accent: var(--amber); }
+        .stat-card.purple { --card-accent: var(--accent); }
+        .stat-card.teal   { --card-accent: #14B8A6; }
+
+        .stat-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--subtext);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.5px;
+            line-height: 1;
+        }
+
+        .stat-unit {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--subtext);
+            margin-left: 2px;
+        }
+
+        .stat-sub {
+            font-size: 0.78rem;
+            color: var(--subtext);
+            margin-top: 6px;
+        }
+
+        .stat-sub .up   { color: var(--green); }
+        .stat-sub .down { color: var(--red); }
+
+        /* ── Chart cards ─────────────────────────────────────────────────────── */
+        .charts-grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .chart-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: box-shadow .2s;
+        }
+
+        .chart-card:hover { box-shadow: var(--shadow-md); }
+
+        .chart-card-header {
             display: flex;
+            align-items: flex-start;
             justify-content: space-between;
-            align-items: center;
-            border-bottom: 3px solid #4caf50;
+            padding: 22px 26px 0;
+            gap: 16px;
         }
 
-        .status-bar .last-update {
-            color: #2e7d32;
+        .chart-card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.2px;
+        }
+
+        .chart-card-subtitle {
+            font-size: 0.8rem;
+            color: var(--subtext);
+            margin-top: 3px;
+        }
+
+        .chart-tag {
+            background: #EEF2FF;
+            color: var(--accent);
+            border: 1px solid #C7D2FE;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .chart-plot-area {
+            padding: 8px 12px 4px;
+        }
+
+        .chart-insight {
+            margin: 0 24px 22px;
+            padding: 14px 16px;
+            background: #F8FAFC;
+            border-left: 3px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+            font-size: 0.82rem;
+            color: var(--subtext);
+            line-height: 1.6;
+        }
+
+        .chart-insight strong {
+            color: var(--text);
             font-weight: 600;
         }
 
-        .error {
-            background: #ffebee;
-            color: #c62828;
-            padding: 20px;
-            margin: 20px;
-            border-radius: 10px;
-            border-left: 4px solid #c62828;
+        /* two-column charts row */
+        .charts-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
         }
 
-        .intro-section {
-            background: #f8f9fa;
-            padding: 25px 30px;
-            margin: 0;
-            border-bottom: 2px solid #e0e0e0;
+        /* ── Loading / error states ──────────────────────────────────────────── */
+        .loading-overlay {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 380px;
+            gap: 20px;
+            color: var(--subtext);
         }
 
-        .intro-section h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 1.3em;
+        .spinner-ring {
+            width: 52px;
+            height: 52px;
+            border: 4px solid #E2E8F0;
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
         }
 
-        .intro-section p {
-            color: #555;
-            line-height: 1.7;
-            margin-bottom: 10px;
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text { font-size: 0.9rem; font-weight: 500; }
+        .loading-sub  { font-size: 0.8rem; color: #94A3B8; }
+
+        .error-box {
+            background: #FFF1F2;
+            border: 1px solid #FECDD3;
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin: 24px 0;
         }
 
-        .footer {
-            background: #2c3e50;
-            color: white;
-            padding: 30px;
+        .error-box h3 { color: #BE123C; margin-bottom: 8px; }
+        .error-box p  { color: #9F1239; font-size: 0.88rem; line-height: 1.6; }
+
+        /* ── Footer ──────────────────────────────────────────────────────────── */
+        .site-footer {
+            background: #0F172A;
+            color: #64748B;
+            padding: 28px 32px;
             text-align: center;
+            font-size: 0.8rem;
+            line-height: 1.8;
+        }
+
+        .site-footer a { color: #818CF8; text-decoration: none; }
+        .site-footer a:hover { color: #A5B4FC; }
+
+        /* ── Responsive tweaks ───────────────────────────────────────────────── */
+        @media (max-width: 900px) {
+            .charts-row-2 { grid-template-columns: 1fr; }
+            .header-inner { height: auto; padding: 14px 0; flex-wrap: wrap; }
+            .main { padding: 20px 16px 48px; }
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .header-brand h1 { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>CAISO Market Analysis Dashboard</h1>
-            <p>Live California electricity market data and economic modeling</p>
-            <div class="live-indicator">LIVE DATA</div>
-        </div>
 
-        <div class="status-bar">
-            <div class="last-update">
-                Last Updated: <span id="last-updated">{{ last_updated }}</span>
-            </div>
-            <button class="refresh-btn" onclick="loadPlots()" id="refresh-btn">
-                Refresh Data
-            </button>
-        </div>
-
-        <div class="intro-section">
-            <h3>About This Dashboard</h3>
-            <p>
-                This dashboard shows real-time data from <strong>CAISO</strong> (California Independent System Operator),
-                the organization that manages California's power grid and electricity market. CAISO ensures that
-                electricity supply matches demand 24/7 across the state.
-            </p>
-            <p>
-                The data below updates every 10 minutes and shows: electricity prices, where power comes from
-                (solar, wind, natural gas, etc.), and how much electricity Californians are using right now.
-                Each chart includes an explanation to help you understand what you're looking at.
-            </p>
-        </div>
-
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>Loading live data from CAISO OASIS API...</p>
-        </div>
-
-        <div id="error-message" style="display: none;"></div>
-
-        <div id="content" class="content" style="display: none;">
-            <div class="plot-section">
-                <div class="plot-header">
-                    <div class="plot-number">1</div>
-                    <div class="plot-title">
-                        <h2>Locational Marginal Price (LMP)</h2>
-                    </div>
-                </div>
-                <div id="plot-lmp" class="plot-container"></div>
-                <div class="plot-description">
-                    <strong>What you're seeing:</strong> Two charts showing electricity prices. The top chart shows the total price over time. The bottom chart breaks that price into three stacked components.
-                    <br><br>
-                    <strong>The three components:</strong> Energy (green) is the basic cost of generating power. Congestion (orange) is added when power lines are crowded and electricity can't flow freely. Loss (red) accounts for electricity lost during transmission over long distances.
-                    <br><br>
-                    <strong>Why it matters:</strong> The total price changes throughout the day based on demand and available power plants. When you see more orange or red in the bottom chart, it means transmission issues are making electricity more expensive.
-                </div>
-            </div>
-
-            <div class="plot-section">
-                <div class="plot-header">
-                    <div class="plot-number">2</div>
-                    <div class="plot-title">
-                        <h2>Trading Hub Comparison</h2>
-                    </div>
-                </div>
-                <div id="plot-hubs" class="plot-container"></div>
-                <div class="plot-description">
-                    <strong>What you're seeing:</strong> Two charts comparing electricity prices across three major California regions: NP15 (Northern California), SP15 (Southern California), and ZP26 (San Diego area). The top chart shows actual prices, the bottom shows the price difference from the state average.
-                    <br><br>
-                    <strong>Why it matters:</strong> Prices vary across California because different regions have different power plants and demand patterns. The bottom chart makes it easy to see which areas are paying more or less than average.
-                    <br><br>
-                    <strong>What to look for:</strong> When one region's line is far above the others, that area has higher electricity costs, usually due to transmission constraints or local supply shortages.
-                </div>
-            </div>
-
-            <div class="plot-section">
-                <div class="plot-header">
-                    <div class="plot-number">3</div>
-                    <div class="plot-title">
-                        <h2>Generation Mix and Duck Curve</h2>
-                    </div>
-                </div>
-                <div id="plot-fuel-stack" class="plot-container"></div>
-                <div class="plot-description">
-                    <strong>What you're seeing:</strong> Two charts showing California's power sources. The top chart is a stacked area showing where electricity comes from hour by hour. The bottom chart shows battery storage activity (charging when negative, discharging when positive).
-                    <br><br>
-                    <strong>The famous duck curve:</strong> Watch solar (yellow) spike during the day and disappear at sunset. Natural gas (red) has to quickly ramp up when solar drops off. Nuclear and hydro (blue and teal) provide steady power throughout the day.
-                    <br><br>
-                    <strong>Why batteries matter:</strong> The bottom chart shows batteries charging during the day when solar is abundant (dip below zero) and discharging in the evening when needed (rise above zero).
-                </div>
-            </div>
-
-            <div class="plot-section">
-                <div class="plot-header">
-                    <div class="plot-number">4</div>
-                    <div class="plot-title">
-                        <h2>Average Generation Portfolio</h2>
-                    </div>
-                </div>
-                <div id="plot-fuel-pie" class="plot-container"></div>
-                <div class="plot-description">
-                    <strong>What you're seeing:</strong> A pie chart showing what percentage of California's electricity came from each source, averaged over the past 12 hours.
-                    <br><br>
-                    <strong>Why it matters:</strong> This gives you a quick snapshot of California's energy mix. Larger slices mean that source provided more power. Look for how much comes from renewables (solar, wind, hydro) versus fossil fuels (natural gas).
-                    <br><br>
-                    <strong>Note:</strong> This is an average - the actual mix changes dramatically throughout the day. For example, solar might be 40% at noon but 0% at midnight.
-                </div>
-            </div>
-
-            <div class="plot-section">
-                <div class="plot-header">
-                    <div class="plot-number">5</div>
-                    <div class="plot-title">
-                        <h2>System Load Profile</h2>
-                    </div>
-                </div>
-                <div id="plot-load" class="plot-container"></div>
-                <div class="plot-description">
-                    <strong>What you're seeing:</strong> How much electricity California is using right now, measured in megawatts. This is total demand across the entire state.
-                    <br><br>
-                    <strong>The daily pattern:</strong> Demand is low at night when people are asleep. It rises in the morning, stays high during the day, and typically peaks in the evening when people come home, cook dinner, and use appliances. In summer, peaks are higher due to air conditioning.
-                    <br><br>
-                    <strong>Why it matters:</strong> Power plants must generate exactly this much electricity at all times. Too little and you get blackouts. Too much and you waste energy. The grid must balance supply and demand perfectly every second.
-                </div>
+<!-- ══════════════ HEADER ════════════════════════════════════════════════════ -->
+<header class="site-header">
+    <div class="header-inner">
+        <div class="header-brand">
+            <div class="header-logo">⚡</div>
+            <div>
+                <h1>CAISO Market Dashboard</h1>
+                <p>California ISO — Real-Time Electricity Market Data</p>
             </div>
         </div>
+        <div class="header-right">
+            <div class="live-badge">
+                <span class="live-dot"></span>Live
+            </div>
+            <span class="last-updated-text" id="last-updated">{{ last_updated }}</span>
+            <button class="refresh-btn" onclick="loadAll()" id="refresh-btn">↺ Refresh</button>
+        </div>
+    </div>
+</header>
 
-        <div class="footer">
-            <p>CAISO OASIS Analysis Project</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">
-                Built with Python, Flask, gridstatus, matplotlib, pandas
-            </p>
+<!-- ══════════════ MAIN ═══════════════════════════════════════════════════════ -->
+<main class="main">
+
+    <!-- Stat cards -->
+    <div class="stats-grid" id="stats-grid">
+        <div class="stat-card purple">
+            <div class="stat-label">Avg LMP (12h)</div>
+            <div class="stat-value" id="stat-avg-lmp"><span class="skeleton-val">—</span><span class="stat-unit">$/MWh</span></div>
+            <div class="stat-sub" id="stat-lmp-range">—</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-label">System Load</div>
+            <div class="stat-value" id="stat-load"><span class="skeleton-val">—</span><span class="stat-unit">MW</span></div>
+            <div class="stat-sub" id="stat-load-peak">—</div>
+        </div>
+        <div class="stat-card amber">
+            <div class="stat-label">Peak LMP (12h)</div>
+            <div class="stat-value" id="stat-peak-lmp"><span class="skeleton-val">—</span><span class="stat-unit">$/MWh</span></div>
+            <div class="stat-sub" id="stat-lmp-min">—</div>
+        </div>
+        <div class="stat-card teal">
+            <div class="stat-label">Top Fuel Source</div>
+            <div class="stat-value" id="stat-top-fuel" style="font-size:1.2rem">—</div>
+            <div class="stat-sub" id="stat-top-fuel-mw">—</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-label">Renewable Share</div>
+            <div class="stat-value" id="stat-renewable"><span class="skeleton-val">—</span><span class="stat-unit">%</span></div>
+            <div class="stat-sub">Solar + Wind + Hydro</div>
         </div>
     </div>
 
-    <script>
-        async function loadPlots() {
-            const loadingDiv = document.getElementById('loading');
-            const contentDiv = document.getElementById('content');
-            const errorDiv = document.getElementById('error-message');
-            const refreshBtn = document.getElementById('refresh-btn');
+    <!-- Error placeholder -->
+    <div id="error-box" style="display:none;"></div>
 
-            // Show loading
-            loadingDiv.style.display = 'block';
-            contentDiv.style.display = 'none';
-            errorDiv.style.display = 'none';
-            refreshBtn.disabled = true;
-            refreshBtn.textContent = 'Loading...';
+    <!-- Charts — full-width -->
+    <div class="charts-grid">
 
-            try {
-                const response = await fetch('/api/plots');
-                const data = await response.json();
+        <!-- Chart 1: LMP Components -->
+        <div class="chart-card" id="card-lmp">
+            <div class="chart-card-header">
+                <div>
+                    <div class="chart-card-title">Locational Marginal Price (LMP)</div>
+                    <div class="chart-card-subtitle">Real-time system average + energy / congestion / loss breakdown</div>
+                </div>
+                <span class="chart-tag">$/MWh</span>
+            </div>
+            <div class="chart-plot-area">
+                <div id="plot-lmp" class="loading-overlay">
+                    <div class="spinner-ring"></div>
+                    <span class="loading-text">Fetching LMP data…</span>
+                    <span class="loading-sub">Querying CAISO OASIS API</span>
+                </div>
+            </div>
+            <div class="chart-insight">
+                <strong>Energy</strong> is the base generation cost.
+                <strong>Congestion</strong> appears when transmission lines are near capacity.
+                <strong>Loss</strong> accounts for electricity dissipated during delivery.
+                Together they form the total LMP — the marginal cost to deliver one additional MWh to a given node.
+            </div>
+        </div>
 
-                if (data.status === 'success') {
-                    // Render Plotly charts
-                    const config = {responsive: true, displayModeBar: true, displaylogo: false};
+        <!-- Chart 2: Trading Hubs -->
+        <div class="chart-card" id="card-hubs">
+            <div class="chart-card-header">
+                <div>
+                    <div class="chart-card-title">Regional Price Comparison</div>
+                    <div class="chart-card-subtitle">NP15 (Northern CA) · SP15 (Southern CA) · ZP26 (San Diego)</div>
+                </div>
+                <span class="chart-tag">Trading Hubs</span>
+            </div>
+            <div class="chart-plot-area">
+                <div id="plot-hubs" class="loading-overlay">
+                    <div class="spinner-ring"></div>
+                    <span class="loading-text">Fetching hub data…</span>
+                </div>
+            </div>
+            <div class="chart-insight">
+                California is divided into three major pricing zones.
+                <strong>NP15</strong> covers the north (PG&amp;E territory), <strong>SP15</strong> the south (SCE), and <strong>ZP26</strong> the San Diego area (SDG&amp;E).
+                Price spreads between zones reveal transmission constraints — the lower chart makes the differential easy to see at a glance.
+            </div>
+        </div>
 
-                    Plotly.newPlot('plot-lmp', data.plots.lmp_components.data, data.plots.lmp_components.layout, config);
-                    Plotly.newPlot('plot-hubs', data.plots.trading_hubs.data, data.plots.trading_hubs.layout, config);
-                    Plotly.newPlot('plot-fuel-stack', data.plots.fuel_mix_stack.data, data.plots.fuel_mix_stack.layout, config);
-                    Plotly.newPlot('plot-fuel-pie', data.plots.fuel_mix_pie.data, data.plots.fuel_mix_pie.layout, config);
-                    Plotly.newPlot('plot-load', data.plots.load_profile.data, data.plots.load_profile.layout, config);
+        <!-- Chart 3: Fuel Mix stacked -->
+        <div class="chart-card" id="card-fuel-stack">
+            <div class="chart-card-header">
+                <div>
+                    <div class="chart-card-title">California Generation Mix</div>
+                    <div class="chart-card-subtitle">Hourly output by fuel type + battery storage activity</div>
+                </div>
+                <span class="chart-tag">MW</span>
+            </div>
+            <div class="chart-plot-area">
+                <div id="plot-fuel-stack" class="loading-overlay">
+                    <div class="spinner-ring"></div>
+                    <span class="loading-text">Fetching fuel mix…</span>
+                </div>
+            </div>
+            <div class="chart-insight">
+                The top panel shows every generation source stacked — watch <strong>Solar</strong> (gold) surge mid-day then vanish at sunset, forcing a rapid ramp-up of <strong>Natural Gas</strong> (red) each evening. This is the famous <em>Duck Curve</em>.
+                The bottom panel tracks <strong>battery storage</strong>: bars below zero mean charging (absorbing cheap solar), bars above zero mean discharging into the evening peak.
+            </div>
+        </div>
 
-                    // Update timestamp
-                    const timestamp = new Date(data.timestamp);
-                    document.getElementById('last-updated').textContent = timestamp.toLocaleString();
+        <!-- Charts 4 + 5: two-column row -->
+        <div class="charts-row-2">
 
-                    // Show content
-                    loadingDiv.style.display = 'none';
-                    contentDiv.style.display = 'block';
-                } else {
-                    throw new Error(data.message || 'Failed to load data');
-                }
-            } catch (error) {
-                console.error('Error loading plots:', error);
-                errorDiv.innerHTML = `
-                    <div class="error">
-                        <h3>Error Loading Data</h3>
-                        <p>${error.message}</p>
-                        <p>Please try refreshing the page or check your connection to the CAISO OASIS API.</p>
+            <!-- Chart 4: Pie -->
+            <div class="chart-card" id="card-fuel-pie">
+                <div class="chart-card-header">
+                    <div>
+                        <div class="chart-card-title">Generation Portfolio</div>
+                        <div class="chart-card-subtitle">12-hour average by source</div>
                     </div>
-                `;
-                errorDiv.style.display = 'block';
-                loadingDiv.style.display = 'none';
-            } finally {
-                refreshBtn.disabled = false;
-                refreshBtn.textContent = 'Refresh Data';
-            }
+                    <span class="chart-tag">Avg Mix</span>
+                </div>
+                <div class="chart-plot-area">
+                    <div id="plot-fuel-pie" class="loading-overlay">
+                        <div class="spinner-ring"></div>
+                        <span class="loading-text">Calculating…</span>
+                    </div>
+                </div>
+                <div class="chart-insight">
+                    A snapshot of California's energy portfolio averaged over the last 12 hours.
+                    Larger slices = more electricity from that source.
+                    The center shows total average output in GW.
+                </div>
+            </div>
+
+            <!-- Chart 5: Load profile -->
+            <div class="chart-card" id="card-load">
+                <div class="chart-card-header">
+                    <div>
+                        <div class="chart-card-title">System Load Profile</div>
+                        <div class="chart-card-subtitle">Statewide electricity demand (actual)</div>
+                    </div>
+                    <span class="chart-tag">MW</span>
+                </div>
+                <div class="chart-plot-area">
+                    <div id="plot-load" class="loading-overlay">
+                        <div class="spinner-ring"></div>
+                        <span class="loading-text">Fetching load data…</span>
+                    </div>
+                </div>
+                <div class="chart-insight">
+                    How much electricity California is consuming right now.
+                    Demand dips overnight, rises through the morning, and peaks in the early evening.
+                    Summer peaks are higher due to air conditioning. The grid must match supply to this curve <em>every second</em>.
+                </div>
+            </div>
+
+        </div><!-- end charts-row-2 -->
+
+    </div><!-- end charts-grid -->
+</main>
+
+<!-- ══════════════ FOOTER ═════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+    <p>Data sourced from <a href="http://oasis.caiso.com" target="_blank">CAISO OASIS API</a> via
+       <a href="https://github.com/kmax12/gridstatus" target="_blank">gridstatus</a> &mdash;
+       updates every 10 minutes.
+    </p>
+    <p style="margin-top:6px; font-size:0.75rem; color:#475569;">
+        Built with Python · Flask · Plotly · Pandas
+    </p>
+</footer>
+
+<!-- ══════════════ JAVASCRIPT ═════════════════════════════════════════════════ -->
+<script>
+    const PLOTLY_CONFIG = {
+        responsive: true,
+        displayModeBar: true,
+        displaylogo: false,
+        modeBarButtonsToRemove: ['select2d', 'lasso2d', 'autoScale2d'],
+        toImageButtonOptions: { format: 'png', scale: 2 },
+    };
+
+    function fmt(v, digits=1) {
+        if (v == null || isNaN(v)) return '—';
+        return parseFloat(v).toLocaleString('en-US', { maximumFractionDigits: digits });
+    }
+
+    function renderPlot(divId, data, layout) {
+        // Replace the loading spinner with the actual chart
+        const el = document.getElementById(divId);
+        el.className = '';
+        el.style.minHeight = '';
+        Plotly.newPlot(divId, data, layout, PLOTLY_CONFIG);
+    }
+
+    async function loadStats() {
+        try {
+            const r = await fetch('/api/stats');
+            const d = await r.json();
+            if (d.status !== 'success') return;
+
+            document.getElementById('stat-avg-lmp').innerHTML =
+                `<b>${fmt(d.lmp.average)}</b><span class="stat-unit"> $/MWh</span>`;
+            document.getElementById('stat-lmp-range').textContent =
+                `Range: ${fmt(d.lmp.min)} – ${fmt(d.lmp.max)}`;
+
+            document.getElementById('stat-load').innerHTML =
+                `<b>${fmt(d.load.average, 0)}</b><span class="stat-unit"> MW</span>`;
+            document.getElementById('stat-load-peak').textContent =
+                `Peak: ${fmt(d.load.max, 0)} MW`;
+
+            document.getElementById('stat-peak-lmp').innerHTML =
+                `<b>${fmt(d.lmp.max)}</b><span class="stat-unit"> $/MWh</span>`;
+            document.getElementById('stat-lmp-min').textContent =
+                `Min: ${fmt(d.lmp.min)} $/MWh`;
+
+            const fuels = d.top_fuels;
+            const topFuel = Object.keys(fuels)[0];
+            document.getElementById('stat-top-fuel').innerHTML =
+                `<b>${topFuel || '—'}</b>`;
+            document.getElementById('stat-top-fuel-mw').textContent =
+                topFuel ? `${fmt(fuels[topFuel], 0)} MW avg` : '—';
+
+            // Renewable share from top_fuels
+            const RENEWABLES = ['Solar','Wind','Large Hydro','Small Hydro','Geothermal','Biomass','Biogas'];
+            const totalGen = Object.values(fuels).reduce((a,b) => a+b, 0);
+            const renewGen = RENEWABLES.reduce((a,k) => a + (fuels[k] || 0), 0);
+            const pct = totalGen > 0 ? (renewGen / totalGen * 100) : 0;
+            document.getElementById('stat-renewable').innerHTML =
+                `<b>${fmt(pct, 0)}</b><span class="stat-unit">%</span>`;
+        } catch(e) {
+            console.warn('Stats fetch failed:', e);
         }
+    }
 
-        // Load plots on page load
-        window.addEventListener('load', loadPlots);
+    async function loadPlots() {
+        const btn = document.getElementById('refresh-btn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Loading…';
 
-        // Auto-refresh every 10 minutes
-        setInterval(loadPlots, 10 * 60 * 1000);
-    </script>
+        // Reset spinners
+        const spinners = [
+            ['plot-lmp',        'Fetching LMP data…'],
+            ['plot-hubs',       'Fetching hub data…'],
+            ['plot-fuel-stack', 'Fetching fuel mix…'],
+            ['plot-fuel-pie',   'Calculating…'],
+            ['plot-load',       'Fetching load data…'],
+        ];
+        spinners.forEach(([id, msg]) => {
+            document.getElementById(id).innerHTML = `
+                <div class="loading-overlay">
+                    <div class="spinner-ring"></div>
+                    <span class="loading-text">${msg}</span>
+                    <span class="loading-sub">Querying CAISO OASIS API</span>
+                </div>`;
+        });
+
+        const errBox = document.getElementById('error-box');
+        errBox.style.display = 'none';
+
+        try {
+            const r = await fetch('/api/plots');
+            const d = await r.json();
+
+            if (d.status !== 'success') throw new Error(d.message || 'API error');
+
+            const p = d.plots;
+            renderPlot('plot-lmp',        p.lmp_components.data,  p.lmp_components.layout);
+            renderPlot('plot-hubs',       p.trading_hubs.data,    p.trading_hubs.layout);
+            renderPlot('plot-fuel-stack', p.fuel_mix_stack.data,  p.fuel_mix_stack.layout);
+            renderPlot('plot-fuel-pie',   p.fuel_mix_pie.data,    p.fuel_mix_pie.layout);
+            renderPlot('plot-load',       p.load_profile.data,    p.load_profile.layout);
+
+            const ts = new Date(d.timestamp);
+            document.getElementById('last-updated').textContent = ts.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) + ' — ' + ts.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+
+        } catch(e) {
+            console.error(e);
+            errBox.innerHTML = `
+                <div class="error-box">
+                    <h3>Unable to load chart data</h3>
+                    <p><strong>Error:</strong> ${e.message}</p>
+                    <p style="margin-top:8px">The CAISO OASIS API may be temporarily unavailable. Please try refreshing in a few moments.</p>
+                </div>`;
+            errBox.style.display = 'block';
+            spinners.forEach(([id]) => { document.getElementById(id).innerHTML = ''; });
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '↺ Refresh';
+        }
+    }
+
+    async function loadAll() {
+        await Promise.all([loadStats(), loadPlots()]);
+    }
+
+    window.addEventListener('load', loadAll);
+    setInterval(loadAll, 10 * 60 * 1000);   // auto-refresh every 10 min
+</script>
 </body>
 </html>
