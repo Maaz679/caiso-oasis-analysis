@@ -4,16 +4,14 @@ Flask web application for CAISO Market Analysis Dashboard
 Serves live dashboard with real-time data from CAISO OASIS API.
 """
 
-from flask import Flask, render_template, jsonify, send_file
+from flask import Flask, render_template, jsonify
 from datetime import datetime, timedelta
-from pathlib import Path
-import io
-import base64
+import json
 
 from src.oasis import CAISOClient
-from notebooks.visualize_data import (
+from notebooks.plotly_viz import (
     plot_lmp_components,
-    plot_trading_hubs_comparison,
+    plot_trading_hubs,
     plot_fuel_mix,
     plot_fuel_mix_pie,
     plot_load_profile
@@ -23,22 +21,6 @@ app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
 
 
-def generate_plot_base64(plot_func, *args):
-    """Generate plot and return as base64 encoded string."""
-    import matplotlib.pyplot as plt
-
-    fig = plot_func(*args)
-
-    # Save to bytes buffer with padding for better web display
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=100, bbox_inches='tight',
-                pad_inches=0.5, facecolor='white')
-    buf.seek(0)
-    plt.close(fig)
-
-    # Encode to base64
-    img_base64 = base64.b64encode(buf.read()).decode('utf-8')
-    return f"data:image/png;base64,{img_base64}"
 
 
 @app.route('/')
@@ -82,7 +64,7 @@ def fetch_data():
 
 @app.route('/api/plots')
 def get_plots():
-    """Generate and return all plots as base64 encoded images."""
+    """Generate and return all plots as Plotly JSON."""
     try:
         hours = 12
         end = datetime.now()
@@ -95,13 +77,13 @@ def get_plots():
             fuel_mix = client.get_fuel_mix(start, end)
             load = client.get_load(start, end)
 
-        # Generate plots
+        # Generate Plotly figures and convert to JSON
         plots = {
-            'lmp_components': generate_plot_base64(plot_lmp_components, lmp),
-            'trading_hubs': generate_plot_base64(plot_trading_hubs_comparison, trading_hub_lmp),
-            'fuel_mix_stack': generate_plot_base64(plot_fuel_mix, fuel_mix),
-            'fuel_mix_pie': generate_plot_base64(plot_fuel_mix_pie, fuel_mix),
-            'load_profile': generate_plot_base64(plot_load_profile, load),
+            'lmp_components': json.loads(plot_lmp_components(lmp).to_json()),
+            'trading_hubs': json.loads(plot_trading_hubs(trading_hub_lmp).to_json()),
+            'fuel_mix_stack': json.loads(plot_fuel_mix(fuel_mix).to_json()),
+            'fuel_mix_pie': json.loads(plot_fuel_mix_pie(fuel_mix).to_json()),
+            'load_profile': json.loads(plot_load_profile(load).to_json()),
         }
 
         return jsonify({

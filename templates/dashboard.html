@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAISO Market Analysis - Live Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
     <style>
         * {
             margin: 0;
@@ -146,12 +147,14 @@
             color: #667eea;
         }
 
-        .plot-img {
+        .plot-container {
             width: 100%;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin: 20px 0;
-            display: block;
+            background: white;
+            padding: 10px;
+            min-height: 400px;
         }
 
         .refresh-btn {
@@ -273,7 +276,7 @@
                         <h2>Locational Marginal Price (LMP)</h2>
                     </div>
                 </div>
-                <img id="plot-lmp" class="plot-img" alt="LMP Components">
+                <div id="plot-lmp" class="plot-container"></div>
                 <div class="plot-description">
                     <strong>What you're seeing:</strong> Two charts showing electricity prices. The top chart shows the total price over time. The bottom chart breaks that price into three stacked components.
                     <br><br>
@@ -290,7 +293,7 @@
                         <h2>Trading Hub Comparison</h2>
                     </div>
                 </div>
-                <img id="plot-hubs" class="plot-img" alt="Trading Hubs">
+                <div id="plot-hubs" class="plot-container"></div>
                 <div class="plot-description">
                     <strong>What you're seeing:</strong> Two charts comparing electricity prices across three major California regions: NP15 (Northern California), SP15 (Southern California), and ZP26 (San Diego area). The top chart shows actual prices, the bottom shows the price difference from the state average.
                     <br><br>
@@ -307,7 +310,7 @@
                         <h2>Generation Mix and Duck Curve</h2>
                     </div>
                 </div>
-                <img id="plot-fuel-stack" class="plot-img" alt="Fuel Mix Stack">
+                <div id="plot-fuel-stack" class="plot-container"></div>
                 <div class="plot-description">
                     <strong>What you're seeing:</strong> Two charts showing California's power sources. The top chart is a stacked area showing where electricity comes from hour by hour. The bottom chart shows battery storage activity (charging when negative, discharging when positive).
                     <br><br>
@@ -324,7 +327,7 @@
                         <h2>Average Generation Portfolio</h2>
                     </div>
                 </div>
-                <img id="plot-fuel-pie" class="plot-img" alt="Fuel Mix Pie">
+                <div id="plot-fuel-pie" class="plot-container"></div>
                 <div class="plot-description">
                     <strong>What you're seeing:</strong> A pie chart showing what percentage of California's electricity came from each source, averaged over the past 12 hours.
                     <br><br>
@@ -341,7 +344,7 @@
                         <h2>System Load Profile</h2>
                     </div>
                 </div>
-                <img id="plot-load" class="plot-img" alt="Load Profile">
+                <div id="plot-load" class="plot-container"></div>
                 <div class="plot-description">
                     <strong>What you're seeing:</strong> How much electricity California is using right now, measured in megawatts. This is total demand across the entire state.
                     <br><br>
@@ -379,12 +382,14 @@
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    // Update plots
-                    document.getElementById('plot-lmp').src = data.plots.lmp_components;
-                    document.getElementById('plot-hubs').src = data.plots.trading_hubs;
-                    document.getElementById('plot-fuel-stack').src = data.plots.fuel_mix_stack;
-                    document.getElementById('plot-fuel-pie').src = data.plots.fuel_mix_pie;
-                    document.getElementById('plot-load').src = data.plots.load_profile;
+                    // Render Plotly charts
+                    const config = {responsive: true, displayModeBar: true, displaylogo: false};
+
+                    Plotly.newPlot('plot-lmp', data.plots.lmp_components.data, data.plots.lmp_components.layout, config);
+                    Plotly.newPlot('plot-hubs', data.plots.trading_hubs.data, data.plots.trading_hubs.layout, config);
+                    Plotly.newPlot('plot-fuel-stack', data.plots.fuel_mix_stack.data, data.plots.fuel_mix_stack.layout, config);
+                    Plotly.newPlot('plot-fuel-pie', data.plots.fuel_mix_pie.data, data.plots.fuel_mix_pie.layout, config);
+                    Plotly.newPlot('plot-load', data.plots.load_profile.data, data.plots.load_profile.layout, config);
 
                     // Update timestamp
                     const timestamp = new Date(data.timestamp);
