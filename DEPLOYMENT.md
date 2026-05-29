@@ -1,79 +1,75 @@
 # Deployment Guide
 
-This guide shows how to deploy the CAISO Market Analysis Dashboard as a live web application.
+## Local Development
 
-## Quick Start (Local Development)
-
-1. Install dependencies:
 ```bash
 pip install -r requirements.txt
-```
-
-2. Run the Flask application:
-```bash
 python app.py
 ```
 
-3. Open your browser to: http://localhost:5000
+Visit http://localhost:5000. The app runs in Flask's debug mode with auto-reload.
 
-The dashboard will automatically fetch live data from CAISO OASIS API when you visit.
+---
 
-## Production Deployment
+## Render (Recommended)
 
-### Option 1: Deploy to Heroku
+The repo includes a `render.yaml` Blueprint file. If you connect the repository to Render, it reads that file and configures the service automatically.
 
-1. Create a `Procfile`:
-```
-web: gunicorn app:app
-```
+1. Go to [render.com](https://render.com) and sign in with GitHub.
+2. Click **New > Blueprint**.
+3. Select the `caiso-oasis-analysis` repository.
+4. Click **Apply**. Render will build and deploy the service.
 
-2. Create `runtime.txt`:
-```
-python-3.12.0
-```
+Your dashboard will be live at `https://<service-name>.onrender.com` within a few minutes.
 
-3. Deploy:
+**Free tier note:** Render's free tier spins down a service after 15 minutes of inactivity. The first request after spin-down takes 30-60 seconds while the container restarts. The CAISO API calls add another 5-15 seconds on top of that. If you need the service always on, upgrade to the Starter plan ($7/month).
+
+### Manual Render setup (without render.yaml)
+
+If you prefer to configure the service through the Render dashboard:
+
+| Setting | Value |
+|---|---|
+| Runtime | Python 3 |
+| Build command | `pip install -r requirements.txt` |
+| Start command | `gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120` |
+| Instance type | Free (or Starter for always-on) |
+| Region | Oregon (US West) - closest to CAISO |
+
+No environment variables are required for basic operation.
+
+---
+
+## Heroku
+
 ```bash
 heroku create your-app-name
 git push heroku main
 heroku open
 ```
 
-### Option 2: Deploy to Railway.app
+The `Procfile` is already configured with the correct gunicorn command.
 
-1. Connect your GitHub repository to Railway
-2. Railway will auto-detect Flask and deploy
-3. Your app will be live at: https://your-app.railway.app
+---
 
-### Option 3: Deploy to Render
+## VPS / Self-Hosted
 
-1. Create a new Web Service on Render
-2. Connect your GitHub repository
-3. Set build command: `pip install -r requirements.txt`
-4. Set start command: `gunicorn app:app`
-5. Deploy
+### 1. Clone and install
 
-### Option 4: Deploy to Your Own Server (VPS)
-
-1. SSH into your server
-
-2. Clone repository:
 ```bash
 git clone https://github.com/Maaz679/caiso-oasis-analysis.git
 cd caiso-oasis-analysis
-```
-
-3. Install dependencies:
-```bash
 pip install -r requirements.txt
 ```
 
-4. Run with Gunicorn:
+### 2. Run with gunicorn
+
 ```bash
-gunicorn -w 4 -b 0.0.0.0:8000 app:app
+gunicorn app:app --bind 0.0.0.0:8000 --workers 2 --timeout 120
 ```
 
-5. Set up Nginx as reverse proxy:
+### 3. Nginx reverse proxy
+
 ```nginx
 server {
     listen 80;
@@ -83,166 +79,71 @@ server {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+        proxy_read_timeout 120s;
     }
 }
 ```
 
-6. Use systemd for auto-restart:
+The `proxy_read_timeout` should match or exceed gunicorn's `--timeout` value. The CAISO API can take 10-20 seconds on the first cold fetch.
+
+### 4. Systemd service
 
 Create `/etc/systemd/system/caiso-dashboard.service`:
+
 ```ini
 [Unit]
-Description=CAISO Market Analysis Dashboard
+Description=CAISO Market Dashboard
 After=network.target
 
 [Service]
 User=youruser
 WorkingDirectory=/path/to/caiso-oasis-analysis
-ExecStart=/usr/bin/gunicorn -w 4 -b 127.0.0.1:8000 app:app
+ExecStart=/usr/bin/gunicorn app:app --bind 127.0.0.1:8000 --workers 2 --timeout 120
 Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-Enable and start:
 ```bash
 sudo systemctl enable caiso-dashboard
 sudo systemctl start caiso-dashboard
 ```
 
-### Option 5: Deploy to Vercel (Serverless)
+---
 
-1. Install Vercel CLI:
-```bash
-npm install -g vercel
-```
+## Environment Variables
 
-2. Create `vercel.json`:
-```json
-{
-  "builds": [
-    {
-      "src": "app.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "app.py"
-    }
-  ]
-}
-```
+No variables are required. Optional overrides:
 
-3. Deploy:
-```bash
-vercel
-```
+| Variable | Default | Purpose |
+|---|---|---|
+| `PORT` | `5000` | Port for local dev; most platforms set this automatically |
+| `FLASK_ENV` | `production` | Set to `development` to enable debug mode locally |
 
-## Features
-
-- Live data fetching from CAISO OASIS API
-- Auto-refresh every 10 minutes
-- Manual refresh button
-- Responsive design
-- Real-time visualizations
-- REST API endpoints
-
-## API Endpoints
-
-- `GET /` - Dashboard home page
-- `GET /api/plots` - Get all plots as base64 images
-- `GET /api/stats` - Get summary statistics
-- `GET /api/fetch-data` - Trigger data fetch
-- `GET /health` - Health check
-
-## Configuration
-
-### Environment Variables
-
-You can set these in your deployment platform:
-
-- `FLASK_ENV=production` - Set production mode
-- `PORT=5000` - Port number (auto-set by most platforms)
-
-### Caching
-
-For production, consider adding Redis caching:
-
-```python
-from flask_caching import Cache
-
-cache = Cache(app, config={'CACHE_TYPE': 'redis'})
-
-@cache.cached(timeout=600)  # Cache for 10 minutes
-def get_data():
-    # ... fetch data
-```
-
-## Monitoring
-
-Add health check monitoring to ensure your app stays online:
-
-- Use the `/health` endpoint
-- Set up uptime monitoring with services like:
-  - UptimeRobot
-  - Pingdom
-  - StatusCake
+---
 
 ## Troubleshooting
 
-### CAISO API Timeouts
+### CAISO API timeout on first load
 
-If you experience timeouts, reduce the data fetch window in `app.py`:
-
-```python
-hours = 6  # Reduce from 12 to 6
-```
-
-### Memory Issues
-
-Reduce image DPI in `app.py`:
+The OASIS API can be slow, especially for large date ranges. The default fetch window is 12 hours. If you see timeouts, reduce it in `app.py`:
 
 ```python
-fig.savefig(buf, format='png', dpi=100, ...)  # Reduce from 150
+hours = 6  # line ~39, ~69, ~108 in app.py
 ```
 
-### Slow Loading
+### 502 Bad Gateway on Render or Heroku
 
-Add caching or use a background worker:
+This almost always means gunicorn timed out waiting for the CAISO API response. The `--timeout 120` flag in the start command gives the worker 120 seconds before gunicorn kills it. If CAISO is slow on that day, increase it:
 
-```python
-from flask_caching import Cache
-cache = Cache(app)
-
-@cache.memoize(timeout=600)
-def generate_plots():
-    # ... generate plots
+```
+gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 180
 ```
 
-## Security
+### App sleeping (Render free tier)
 
-For production deployments:
-
-1. Set `app.config['SECRET_KEY']`
-2. Use HTTPS (Let's Encrypt)
-3. Add rate limiting:
-```bash
-pip install Flask-Limiter
-```
-
-4. Enable CORS if needed:
-```bash
-pip install flask-cors
-```
-
-## Performance
-
-- Images are generated on-demand
-- Auto-refresh every 10 minutes
-- Use CDN for static assets
-- Consider Redis for caching
-
-Your dashboard will be live and automatically update with fresh CAISO market data!
+Free tier services spin down after 15 minutes of inactivity. You can prevent this by:
+- Upgrading to Render Starter ($7/month)
+- Setting up an external uptime monitor (UptimeRobot free tier) to ping `/health` every 10 minutes
