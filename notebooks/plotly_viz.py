@@ -70,22 +70,28 @@ def _apply_axis_style(fig, rows=1):
 
 
 def plot_lmp_components(lmp_df: pd.DataFrame) -> go.Figure:
-    """LMP over time with energy / congestion / loss breakdown."""
+    """LMP over time with energy / congestion / loss / GHG breakdown."""
+    agg_cols = ['lmp_total', 'lmp_energy', 'lmp_congestion', 'lmp_loss']
+    if 'lmp_ghg' in lmp_df.columns:
+        agg_cols.append('lmp_ghg')
+
     df = (
-        lmp_df.groupby('timestamp')[['lmp_total', 'lmp_energy', 'lmp_congestion', 'lmp_loss']]
+        lmp_df.groupby('timestamp')[agg_cols]
         .mean()
         .reset_index()
         .sort_values('timestamp')
     )
 
+    has_ghg = 'lmp_ghg' in df.columns and df['lmp_ghg'].abs().max() > 0.01
+
     fig = make_subplots(
         rows=2, cols=1,
         row_heights=[0.45, 0.55],
-        subplot_titles=('Real-Time LMP — System Average', 'Price Component Breakdown'),
+        subplot_titles=('Real-Time LMP: Hub Average', 'Price Component Breakdown'),
         vertical_spacing=0.14,
     )
 
-    # ── Row 1: total LMP gradient fill ──────────────────────────────────────
+    # Row 1: total LMP
     fig.add_trace(
         go.Scatter(
             x=df['timestamp'], y=df['lmp_total'],
@@ -99,29 +105,28 @@ def plot_lmp_components(lmp_df: pd.DataFrame) -> go.Figure:
         row=1, col=1,
     )
 
-    # ── Row 2: stacked components ────────────────────────────────────────────
-    component_colors = {
-        'lmp_energy':     ('#10B981', 'rgba(16,185,129,0.80)', 'Energy'),
-        'lmp_congestion': ('#F59E0B', 'rgba(245,158,11,0.80)', 'Congestion'),
-        'lmp_loss':       ('#EF4444', 'rgba(239,68,68,0.80)',  'Loss'),
-    }
+    # Row 2: individual component lines (not stacked - components can be negative)
+    components = [
+        ('lmp_energy',     '#10B981', 'Energy'),
+        ('lmp_congestion', '#F59E0B', 'Congestion'),
+        ('lmp_loss',       '#EF4444', 'Loss'),
+    ]
+    if has_ghg:
+        components.append(('lmp_ghg', '#8B5CF6', 'GHG (Carbon)'))
 
-    first = True
-    for col, (line_color, fill_color, label) in component_colors.items():
+    for col, color, label in components:
         fig.add_trace(
             go.Scatter(
                 x=df['timestamp'], y=df[col],
                 name=label,
                 mode='lines',
-                line=dict(color=line_color, width=0),
-                fillcolor=fill_color,
-                fill='tozeroy' if first else 'tonexty',
-                stackgroup='components',
+                line=dict(color=color, width=2),
                 hovertemplate=f'<b>%{{y:.2f}} $/MWh</b><extra>{label}</extra>',
             ),
             row=2, col=1,
         )
-        first = False
+
+    fig.add_hline(y=0, line_dash='dot', line_color='#94A3B8', line_width=1, row=2, col=1)
 
     _apply_axis_style(fig, rows=2)
     fig.update_yaxes(title_text='$/MWh', row=1, col=1)
@@ -149,15 +154,15 @@ def plot_lmp_components(lmp_df: pd.DataFrame) -> go.Figure:
 def plot_trading_hubs(lmp_df: pd.DataFrame) -> go.Figure:
     """Regional LMP comparison — NP15 / SP15 / ZP26."""
     hub_info = {
-        'TH_NP15_GEN-APND': {'label': 'NP15 — Northern CA', 'color': '#6366F1'},
-        'TH_SP15_GEN-APND': {'label': 'SP15 — Southern CA', 'color': '#EF4444'},
-        'TH_ZP26_GEN-APND': {'label': 'ZP26 — San Diego',   'color': '#F59E0B'},
+        'TH_NP15_GEN-APND': {'label': 'NP15 (Northern CA)', 'color': '#6366F1'},
+        'TH_SP15_GEN-APND': {'label': 'SP15 (Southern CA)', 'color': '#EF4444'},
+        'TH_ZP26_GEN-APND': {'label': 'ZP26 (San Diego)',   'color': '#F59E0B'},
     }
 
     fig = make_subplots(
         rows=2, cols=1,
         row_heights=[0.55, 0.45],
-        subplot_titles=('Regional Price Comparison', 'Spread vs. System Average'),
+        subplot_titles=('Regional Price Comparison', 'Spread vs. Average of Three Hubs'),
         vertical_spacing=0.14,
     )
 

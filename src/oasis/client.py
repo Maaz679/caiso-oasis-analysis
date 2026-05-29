@@ -90,6 +90,7 @@ class CAISOClient:
                 'Energy': 'lmp_energy',
                 'Congestion': 'lmp_congestion',
                 'Loss': 'lmp_loss',
+                'GHG': 'lmp_ghg',
             })
 
             logger.info(f"Retrieved {len(df)} LMP records")
