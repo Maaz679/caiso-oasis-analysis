@@ -91,7 +91,7 @@
             background: #f8f9fa;
             border-radius: 15px;
             padding: 30px;
-            margin-bottom: 30px;
+            margin-bottom: 50px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
@@ -151,6 +151,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin: 20px 0;
+            display: block;
         }
 
         .refresh-btn {
@@ -274,11 +275,11 @@
                 </div>
                 <img id="plot-lmp" class="plot-img" alt="LMP Components">
                 <div class="plot-description">
-                    <strong>What you're seeing:</strong> The price of electricity in California right now, broken down into three parts.
+                    <strong>What you're seeing:</strong> Two charts showing electricity prices. The top chart shows the total price over time. The bottom chart breaks that price into three stacked components.
                     <br><br>
-                    <strong>Why it matters:</strong> The total price (purple line) shows what it costs to deliver one megawatt-hour of electricity. This price changes throughout the day based on demand, available power plants, and transmission constraints. Higher prices usually mean high demand or limited supply.
+                    <strong>The three components:</strong> Energy (green) is the basic cost of generating power. Congestion (orange) is added when power lines are crowded and electricity can't flow freely. Loss (red) accounts for electricity lost during transmission over long distances.
                     <br><br>
-                    <strong>The three components:</strong> Energy cost (blue) is the basic cost of generating power. Congestion (orange) is added when power lines are crowded. Loss (green) accounts for electricity lost during transmission.
+                    <strong>Why it matters:</strong> The total price changes throughout the day based on demand and available power plants. When you see more orange or red in the bottom chart, it means transmission issues are making electricity more expensive.
                 </div>
             </div>
 
@@ -291,11 +292,11 @@
                 </div>
                 <img id="plot-hubs" class="plot-img" alt="Trading Hubs">
                 <div class="plot-description">
-                    <strong>What you're seeing:</strong> Electricity prices at three major regions in California: NP15 (Northern California), SP15 (Southern California), and ZP26 (Central California).
+                    <strong>What you're seeing:</strong> Two charts comparing electricity prices across three major California regions: NP15 (Northern California), SP15 (Southern California), and ZP26 (San Diego area). The top chart shows actual prices, the bottom shows the price difference from the state average.
                     <br><br>
-                    <strong>Why it matters:</strong> Prices vary across California because some areas have more power plants or face different demand patterns. When one region has much higher prices than others, it often indicates local congestion or supply issues in that area.
+                    <strong>Why it matters:</strong> Prices vary across California because different regions have different power plants and demand patterns. The bottom chart makes it easy to see which areas are paying more or less than average.
                     <br><br>
-                    <strong>What to look for:</strong> Generally, prices move together. Big gaps between regions indicate transmission bottlenecks or local supply constraints.
+                    <strong>What to look for:</strong> When one region's line is far above the others, that area has higher electricity costs, usually due to transmission constraints or local supply shortages.
                 </div>
             </div>
 
@@ -308,11 +309,11 @@
                 </div>
                 <img id="plot-fuel-stack" class="plot-img" alt="Fuel Mix Stack">
                 <div class="plot-description">
-                    <strong>What you're seeing:</strong> Where California's electricity comes from hour by hour. Each colored layer represents a different power source stacked on top of each other.
+                    <strong>What you're seeing:</strong> Two charts showing California's power sources. The top chart is a stacked area showing where electricity comes from hour by hour. The bottom chart shows battery storage activity (charging when negative, discharging when positive).
                     <br><br>
-                    <strong>Why it matters:</strong> This shows the famous "duck curve" - solar power surges during the day (causing the belly dip), then drops off at sunset (the steep ramp-up). Natural gas plants have to quickly ramp up when solar disappears, which is expensive and challenging.
+                    <strong>The famous duck curve:</strong> Watch solar (yellow) spike during the day and disappear at sunset. Natural gas (red) has to quickly ramp up when solar drops off. Nuclear and hydro (blue and teal) provide steady power throughout the day.
                     <br><br>
-                    <strong>What to look for:</strong> Watch solar (yellow) spike midday and disappear at sunset. See how natural gas (blue) fills the gap. Nuclear and hydro provide steady baseload power throughout.
+                    <strong>Why batteries matter:</strong> The bottom chart shows batteries charging during the day when solar is abundant (dip below zero) and discharging in the evening when needed (rise above zero).
                 </div>
             </div>
 
@@ -325,11 +326,11 @@
                 </div>
                 <img id="plot-fuel-pie" class="plot-img" alt="Fuel Mix Pie">
                 <div class="plot-description">
-                    <strong>What you're seeing:</strong> A pie chart showing the average percentage breakdown of California's electricity sources over the past 12 hours.
+                    <strong>What you're seeing:</strong> A pie chart showing what percentage of California's electricity came from each source, averaged over the past 12 hours.
                     <br><br>
-                    <strong>Why it matters:</strong> This gives you a quick snapshot of California's overall energy mix. It shows how diverse (or dependent) the state is on different power sources.
+                    <strong>Why it matters:</strong> This gives you a quick snapshot of California's energy mix. Larger slices mean that source provided more power. Look for how much comes from renewables (solar, wind, hydro) versus fossil fuels (natural gas).
                     <br><br>
-                    <strong>California's energy transition:</strong> You'll typically see significant renewable energy (solar, wind, hydro) combined with natural gas as the flexible backup. The mix changes seasonally and by time of day.
+                    <strong>Note:</strong> This is an average - the actual mix changes dramatically throughout the day. For example, solar might be 40% at noon but 0% at midnight.
                 </div>
             </div>
 
@@ -342,11 +343,11 @@
                 </div>
                 <img id="plot-load" class="plot-img" alt="Load Profile">
                 <div class="plot-description">
-                    <strong>What you're seeing:</strong> Total electricity demand (consumption) across California throughout the day, measured in megawatts.
+                    <strong>What you're seeing:</strong> How much electricity California is using right now, measured in megawatts. This is total demand across the entire state.
                     <br><br>
-                    <strong>Why it matters:</strong> This shows when Californians use the most electricity. Demand typically peaks in late afternoon and early evening when people come home, turn on air conditioning, cook dinner, and use appliances.
+                    <strong>The daily pattern:</strong> Demand is low at night when people are asleep. It rises in the morning, stays high during the day, and typically peaks in the evening when people come home, cook dinner, and use appliances. In summer, peaks are higher due to air conditioning.
                     <br><br>
-                    <strong>The daily pattern:</strong> Low demand at night when people sleep, rises in the morning, plateaus during the day, and peaks in the evening. Summer peaks are higher due to air conditioning. This demand must be matched exactly by generation at all times.
+                    <strong>Why it matters:</strong> Power plants must generate exactly this much electricity at all times. Too little and you get blackouts. Too much and you waste energy. The grid must balance supply and demand perfectly every second.
                 </div>
             </div>
         </div>
