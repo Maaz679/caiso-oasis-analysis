@@ -127,7 +127,7 @@ def plot_lmp_components(lmp_df: pd.DataFrame) -> go.Figure:
     fig.update_yaxes(title_text='$/MWh', row=1, col=1)
     fig.update_yaxes(title_text='$/MWh', row=2, col=1)
     fig.update_xaxes(title_text='', row=1, col=1)
-    fig.update_xaxes(title_text='Time (Pacific)', row=2, col=1)
+    fig.update_xaxes(title_text='Time (US Pacific PT)', row=2, col=1)
 
     fig.update_layout(
         **_BASE_LAYOUT,
@@ -203,7 +203,7 @@ def plot_trading_hubs(lmp_df: pd.DataFrame) -> go.Figure:
     _apply_axis_style(fig, rows=2)
     fig.update_yaxes(title_text='$/MWh', row=1, col=1)
     fig.update_yaxes(title_text='Spread ($/MWh)', row=2, col=1)
-    fig.update_xaxes(title_text='Time (Pacific)', row=2, col=1)
+    fig.update_xaxes(title_text='Time (US Pacific PT)', row=2, col=1)
 
     fig.update_layout(
         **_BASE_LAYOUT,
@@ -285,7 +285,7 @@ def plot_fuel_mix(fuel_df: pd.DataFrame) -> go.Figure:
     fig.add_hline(y=0, line_dash='dot', line_color='#94A3B8', line_width=1, row=2, col=1)
 
     _apply_axis_style(fig, rows=2)
-    fig.update_xaxes(title_text='Time (Pacific)', row=2, col=1)
+    fig.update_xaxes(title_text='Time (US Pacific PT)', row=2, col=1)
     fig.update_yaxes(title_text='Generation (MW)', row=1, col=1)
     fig.update_yaxes(title_text='MW', row=2, col=1)
 
@@ -396,7 +396,7 @@ def plot_load_profile(load_df: pd.DataFrame) -> go.Figure:
         ax=0, ay=-40,
     )
 
-    fig.update_xaxes(title_text='Time (Pacific)', **_AXIS_STYLE)
+    fig.update_xaxes(title_text='Time (US Pacific PT)', **_AXIS_STYLE)
     fig.update_yaxes(title_text='Load (MW)', **_AXIS_STYLE)
 
     fig.update_layout(

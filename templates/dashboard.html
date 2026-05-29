@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAISO Market Dashboard — Live Data</title>
+    <title>CAISO Market Dashboard - Live Data</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -35,7 +35,6 @@
             line-height: 1.5;
         }
 
-        /* ── Header ─────────────────────────────────────────────────────────── */
         .site-header {
             background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #312E81 100%);
             padding: 0 32px;
@@ -69,7 +68,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 0.5px;
             box-shadow: 0 2px 8px rgba(99,102,241,.50);
         }
 
@@ -141,14 +143,12 @@
         .refresh-btn:hover    { opacity: .88; transform: translateY(-1px); }
         .refresh-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
-        /* ── Main layout ─────────────────────────────────────────────────────── */
         .main {
             max-width: 1440px;
             margin: 0 auto;
             padding: 28px 28px 60px;
         }
 
-        /* ── Stat cards row ──────────────────────────────────────────────────── */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -214,10 +214,6 @@
             margin-top: 6px;
         }
 
-        .stat-sub .up   { color: var(--green); }
-        .stat-sub .down { color: var(--red); }
-
-        /* ── Chart cards ─────────────────────────────────────────────────────── */
         .charts-grid {
             display: grid;
             gap: 24px;
@@ -278,7 +274,7 @@
             border-radius: 0 8px 8px 0;
             font-size: 0.82rem;
             color: var(--subtext);
-            line-height: 1.6;
+            line-height: 1.7;
         }
 
         .chart-insight strong {
@@ -286,14 +282,20 @@
             font-weight: 600;
         }
 
-        /* two-column charts row */
+        .chart-insight p {
+            margin-bottom: 8px;
+        }
+
+        .chart-insight p:last-child {
+            margin-bottom: 0;
+        }
+
         .charts-row-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 24px;
         }
 
-        /* ── Loading / error states ──────────────────────────────────────────── */
         .loading-overlay {
             display: flex;
             flex-direction: column;
@@ -329,7 +331,6 @@
         .error-box h3 { color: #BE123C; margin-bottom: 8px; }
         .error-box p  { color: #9F1239; font-size: 0.88rem; line-height: 1.6; }
 
-        /* ── Footer ──────────────────────────────────────────────────────────── */
         .site-footer {
             background: #0F172A;
             color: #64748B;
@@ -342,7 +343,6 @@
         .site-footer a { color: #818CF8; text-decoration: none; }
         .site-footer a:hover { color: #A5B4FC; }
 
-        /* ── Responsive tweaks ───────────────────────────────────────────────── */
         @media (max-width: 900px) {
             .charts-row-2 { grid-template-columns: 1fr; }
             .header-inner { height: auto; padding: 14px 0; flex-wrap: wrap; }
@@ -357,14 +357,13 @@
 </head>
 <body>
 
-<!-- ══════════════ HEADER ════════════════════════════════════════════════════ -->
 <header class="site-header">
     <div class="header-inner">
         <div class="header-brand">
-            <div class="header-logo">⚡</div>
+            <div class="header-logo">CA</div>
             <div>
                 <h1>CAISO Market Dashboard</h1>
-                <p>California ISO — Real-Time Electricity Market Data</p>
+                <p>California ISO - Real-Time Electricity Market Data</p>
             </div>
         </div>
         <div class="header-right">
@@ -372,47 +371,43 @@
                 <span class="live-dot"></span>Live
             </div>
             <span class="last-updated-text" id="last-updated">{{ last_updated }}</span>
-            <button class="refresh-btn" onclick="loadAll()" id="refresh-btn">↺ Refresh</button>
+            <button class="refresh-btn" onclick="loadAll()" id="refresh-btn">Refresh</button>
         </div>
     </div>
 </header>
 
-<!-- ══════════════ MAIN ═══════════════════════════════════════════════════════ -->
 <main class="main">
 
-    <!-- Stat cards -->
     <div class="stats-grid" id="stats-grid">
         <div class="stat-card purple">
             <div class="stat-label">Avg LMP (12h)</div>
-            <div class="stat-value" id="stat-avg-lmp"><span class="skeleton-val">—</span><span class="stat-unit">$/MWh</span></div>
-            <div class="stat-sub" id="stat-lmp-range">—</div>
+            <div class="stat-value" id="stat-avg-lmp">-<span class="stat-unit">$/MWh</span></div>
+            <div class="stat-sub" id="stat-lmp-range">-</div>
         </div>
         <div class="stat-card green">
             <div class="stat-label">System Load</div>
-            <div class="stat-value" id="stat-load"><span class="skeleton-val">—</span><span class="stat-unit">MW</span></div>
-            <div class="stat-sub" id="stat-load-peak">—</div>
+            <div class="stat-value" id="stat-load">-<span class="stat-unit">MW</span></div>
+            <div class="stat-sub" id="stat-load-peak">-</div>
         </div>
         <div class="stat-card amber">
             <div class="stat-label">Peak LMP (12h)</div>
-            <div class="stat-value" id="stat-peak-lmp"><span class="skeleton-val">—</span><span class="stat-unit">$/MWh</span></div>
-            <div class="stat-sub" id="stat-lmp-min">—</div>
+            <div class="stat-value" id="stat-peak-lmp">-<span class="stat-unit">$/MWh</span></div>
+            <div class="stat-sub" id="stat-lmp-min">-</div>
         </div>
         <div class="stat-card teal">
             <div class="stat-label">Top Fuel Source</div>
-            <div class="stat-value" id="stat-top-fuel" style="font-size:1.2rem">—</div>
-            <div class="stat-sub" id="stat-top-fuel-mw">—</div>
+            <div class="stat-value" id="stat-top-fuel" style="font-size:1.2rem">-</div>
+            <div class="stat-sub" id="stat-top-fuel-mw">-</div>
         </div>
         <div class="stat-card green">
             <div class="stat-label">Renewable Share</div>
-            <div class="stat-value" id="stat-renewable"><span class="skeleton-val">—</span><span class="stat-unit">%</span></div>
+            <div class="stat-value" id="stat-renewable">-<span class="stat-unit">%</span></div>
             <div class="stat-sub">Solar + Wind + Hydro</div>
         </div>
     </div>
 
-    <!-- Error placeholder -->
     <div id="error-box" style="display:none;"></div>
 
-    <!-- Charts — full-width -->
     <div class="charts-grid">
 
         <!-- Chart 1: LMP Components -->
@@ -420,22 +415,21 @@
             <div class="chart-card-header">
                 <div>
                     <div class="chart-card-title">Locational Marginal Price (LMP)</div>
-                    <div class="chart-card-subtitle">Real-time system average + energy / congestion / loss breakdown</div>
+                    <div class="chart-card-subtitle">Real-time system average with energy, congestion, and loss breakdown - all times in US Pacific (PT)</div>
                 </div>
                 <span class="chart-tag">$/MWh</span>
             </div>
             <div class="chart-plot-area">
                 <div id="plot-lmp" class="loading-overlay">
                     <div class="spinner-ring"></div>
-                    <span class="loading-text">Fetching LMP data…</span>
+                    <span class="loading-text">Fetching LMP data...</span>
                     <span class="loading-sub">Querying CAISO OASIS API</span>
                 </div>
             </div>
             <div class="chart-insight">
-                <strong>Energy</strong> is the base generation cost.
-                <strong>Congestion</strong> appears when transmission lines are near capacity.
-                <strong>Loss</strong> accounts for electricity dissipated during delivery.
-                Together they form the total LMP — the marginal cost to deliver one additional MWh to a given node.
+                <p>The LMP is the price CAISO sets every five minutes for buying or selling one additional megawatt-hour of electricity at a specific location on the grid. It reflects what it would actually cost the system to serve one more unit of demand right now, not an average or a contract rate.</p>
+                <p>The price is built from three additive components. <strong>Energy</strong> is determined by the fuel and operating cost of the most expensive generating unit currently dispatched system-wide. When demand is low and cheap resources like solar are abundant, this component falls. When demand is high and gas peakers must run, it rises sharply. <strong>Congestion</strong> appears whenever a transmission line is operating at its physical limit and cannot carry more power. Nodes on the constrained side of that bottleneck face a premium because cheaper generation elsewhere cannot reach them. This component can be negative if the constraint actually benefits a location. <strong>Loss</strong> accounts for the electricity that dissipates as heat during transmission over long distances. The grid prices that loss at the marginal generation cost, since the system must generate extra power to compensate for what is lost en route.</p>
+                <p>The bottom panel stacks all three components over time. A chart dominated by the energy band is typical during off-peak hours. Heavy orange or red in the congestion band is a signal that the transmission system is under stress and that specific lines or substations may be bottlenecks worth watching.</p>
             </div>
         </div>
 
@@ -444,20 +438,20 @@
             <div class="chart-card-header">
                 <div>
                     <div class="chart-card-title">Regional Price Comparison</div>
-                    <div class="chart-card-subtitle">NP15 (Northern CA) · SP15 (Southern CA) · ZP26 (San Diego)</div>
+                    <div class="chart-card-subtitle">NP15 (Northern CA), SP15 (Southern CA), ZP26 (San Diego) - all times in US Pacific (PT)</div>
                 </div>
                 <span class="chart-tag">Trading Hubs</span>
             </div>
             <div class="chart-plot-area">
                 <div id="plot-hubs" class="loading-overlay">
                     <div class="spinner-ring"></div>
-                    <span class="loading-text">Fetching hub data…</span>
+                    <span class="loading-text">Fetching hub data...</span>
                 </div>
             </div>
             <div class="chart-insight">
-                California is divided into three major pricing zones.
-                <strong>NP15</strong> covers the north (PG&amp;E territory), <strong>SP15</strong> the south (SCE), and <strong>ZP26</strong> the San Diego area (SDG&amp;E).
-                Price spreads between zones reveal transmission constraints — the lower chart makes the differential easy to see at a glance.
+                <p>CAISO operates a single interconnected grid, but prices differ across the state because of physical constraints on the transmission network. The three trading hubs shown here are aggregated pricing nodes that represent large geographic zones rather than single substations.</p>
+                <p><strong>NP15</strong> covers northern California, roughly the PG&amp;E service territory north of a dividing line near Fresno. It tends to have lower prices when hydropower from the Sierra Nevada and Pacific Northwest imports are abundant. <strong>SP15</strong> covers southern California under SCE, a large load center with high summer air conditioning demand and proximity to desert solar resources. <strong>ZP26</strong> covers the SDG&amp;E territory around San Diego, a smaller and often more expensive zone because it is electrically isolated and depends heavily on import capacity through a few key transmission corridors.</p>
+                <p>The spread chart in the lower panel shows each hub's price relative to the real-time system average. A persistent positive spread in one zone signals a local supply shortage or transmission constraint isolating that area. A negative spread means that zone has cheaper local resources than the rest of the grid. Path 26 between NP15 and SP15 and the Southwest Powerlink into ZP26 are the two most commonly congested interfaces in California, and their impact shows up directly in these spreads.</p>
             </div>
         </div>
 
@@ -466,19 +460,21 @@
             <div class="chart-card-header">
                 <div>
                     <div class="chart-card-title">California Generation Mix</div>
-                    <div class="chart-card-subtitle">Hourly output by fuel type + battery storage activity</div>
+                    <div class="chart-card-subtitle">Output by fuel type with battery storage activity - all times in US Pacific (PT)</div>
                 </div>
                 <span class="chart-tag">MW</span>
             </div>
             <div class="chart-plot-area">
                 <div id="plot-fuel-stack" class="loading-overlay">
                     <div class="spinner-ring"></div>
-                    <span class="loading-text">Fetching fuel mix…</span>
+                    <span class="loading-text">Fetching fuel mix...</span>
                 </div>
             </div>
             <div class="chart-insight">
-                The top panel shows every generation source stacked — watch <strong>Solar</strong> (gold) surge mid-day then vanish at sunset, forcing a rapid ramp-up of <strong>Natural Gas</strong> (red) each evening. This is the famous <em>Duck Curve</em>.
-                The bottom panel tracks <strong>battery storage</strong>: bars below zero mean charging (absorbing cheap solar), bars above zero mean discharging into the evening peak.
+                <p>California's grid draws from over a dozen fuel types simultaneously, and their relative contributions shift dramatically over the course of a day. The top panel stacks each source's output, so the total height of the chart at any moment equals total in-state generation plus net imports. The area is not fixed at 100 percent because total generation rises and falls with demand.</p>
+                <p>The pattern known as the <strong>Duck Curve</strong> is visible whenever the window covers daylight hours. Solar output (gold) climbs steeply in the morning and peaks around noon, sometimes pushing total renewable generation high enough to displace nearly all other sources. Then solar drops off sharply after 3 or 4 PM. At the same time, residential demand rises as people return home in the evening. The grid must ramp up <strong>Natural Gas</strong> (red) peakers extremely fast to fill that gap, often adding several thousand megawatts within an hour. That ramp is one of the most operationally challenging aspects of running a high-solar grid.</p>
+                <p><strong>Nuclear</strong> and <strong>Large Hydro</strong> run steadily around the clock because they are either inflexible (nuclear) or operationally efficient to hold at a constant output (hydro). Imports (gray) reflect net power flowing into California from neighboring states and are often highest in the early morning when in-state demand is low and out-of-state generators have surplus capacity to sell cheaply.</p>
+                <p>The bottom panel shows battery storage behavior. Bars below zero mean batteries are charging, which typically happens mid-day when solar is abundant and prices are low. Bars above zero mean batteries are discharging into the evening peak. California now has several gigawatts of grid-scale battery capacity installed, and its charging and discharging behavior directly flattens the Duck Curve by absorbing excess solar and releasing it during the ramp.</p>
             </div>
         </div>
 
@@ -490,20 +486,20 @@
                 <div class="chart-card-header">
                     <div>
                         <div class="chart-card-title">Generation Portfolio</div>
-                        <div class="chart-card-subtitle">12-hour average by source</div>
+                        <div class="chart-card-subtitle">12-hour average by fuel source</div>
                     </div>
                     <span class="chart-tag">Avg Mix</span>
                 </div>
                 <div class="chart-plot-area">
                     <div id="plot-fuel-pie" class="loading-overlay">
                         <div class="spinner-ring"></div>
-                        <span class="loading-text">Calculating…</span>
+                        <span class="loading-text">Calculating...</span>
                     </div>
                 </div>
                 <div class="chart-insight">
-                    A snapshot of California's energy portfolio averaged over the last 12 hours.
-                    Larger slices = more electricity from that source.
-                    The center shows total average output in GW.
+                    <p>This chart shows each fuel type's average contribution to California's total generation over the past 12 hours. The center displays the overall average output in gigawatts.</p>
+                    <p>Because the mix is averaged across the full window, it smooths out the intraday volatility shown in the stacked chart. A 12-hour average that includes overnight hours will understate solar's midday contribution and overstate how much gas was running at all times. To understand the current carbon intensity of the grid, you need to look at the stacked chart in real time rather than this average. Still, the portfolio view is useful for understanding the rough structural balance: how much of California's power comes from carbon-free sources (solar, wind, hydro, nuclear, geothermal) versus fossil sources (natural gas, coal) on a given day.</p>
+                    <p>California's renewable portfolio standard requires utilities to procure a growing percentage of power from eligible renewables. The share shown here reflects actual dispatch, which can differ from contracted capacity because renewable output depends on weather conditions.</p>
                 </div>
             </div>
 
@@ -512,40 +508,38 @@
                 <div class="chart-card-header">
                     <div>
                         <div class="chart-card-title">System Load Profile</div>
-                        <div class="chart-card-subtitle">Statewide electricity demand (actual)</div>
+                        <div class="chart-card-subtitle">Statewide electricity demand in US Pacific (PT)</div>
                     </div>
                     <span class="chart-tag">MW</span>
                 </div>
                 <div class="chart-plot-area">
                     <div id="plot-load" class="loading-overlay">
                         <div class="spinner-ring"></div>
-                        <span class="loading-text">Fetching load data…</span>
+                        <span class="loading-text">Fetching load data...</span>
                     </div>
                 </div>
                 <div class="chart-insight">
-                    How much electricity California is consuming right now.
-                    Demand dips overnight, rises through the morning, and peaks in the early evening.
-                    Summer peaks are higher due to air conditioning. The grid must match supply to this curve <em>every second</em>.
+                    <p>System load is the total amount of electricity being consumed across California at each moment, measured in megawatts. This figure comes from CAISO's real-time measurement of actual demand flowing through the grid, not a forecast.</p>
+                    <p>California's load follows a predictable daily shape. Demand is at its lowest between 2 and 5 AM when most households and businesses are idle. It climbs through the morning as commercial and industrial facilities open, plateaus through midday, and then peaks in the early evening, typically between 5 and 9 PM, when residential demand combines with remaining commercial load. Air conditioning adds a significant seasonal overlay: summer loads can be 30 to 40 percent higher than winter loads on hot days, and extreme heat waves have pushed California's all-time peak above 52,000 MW.</p>
+                    <p>CAISO is responsible for balancing generation against this load curve in real time, every five minutes. Generating too little causes frequency to drop, which can damage equipment and trigger automatic blackouts. Generating too much causes frequency to rise, which can force generators to trip off-line. The grid operates within a narrow frequency band of 59.95 to 60.05 Hz, and maintaining that balance as load shifts by thousands of megawatts over the course of a day is the core operational challenge CAISO solves continuously.</p>
                 </div>
             </div>
 
-        </div><!-- end charts-row-2 -->
+        </div>
 
-    </div><!-- end charts-grid -->
+    </div>
 </main>
 
-<!-- ══════════════ FOOTER ═════════════════════════════════════════════════════ -->
 <footer class="site-footer">
-    <p>Data sourced from <a href="http://oasis.caiso.com" target="_blank">CAISO OASIS API</a> via
-       <a href="https://github.com/kmax12/gridstatus" target="_blank">gridstatus</a> &mdash;
-       updates every 10 minutes.
+    <p>Data sourced from the <a href="http://oasis.caiso.com" target="_blank">CAISO OASIS API</a> via
+       <a href="https://github.com/kmax12/gridstatus" target="_blank">gridstatus</a>.
+       All timestamps are US Pacific Time (PT). Updates every 10 minutes.
     </p>
     <p style="margin-top:6px; font-size:0.75rem; color:#475569;">
-        Built with Python · Flask · Plotly · Pandas
+        Built with Python, Flask, Plotly, Pandas
     </p>
 </footer>
 
-<!-- ══════════════ JAVASCRIPT ═════════════════════════════════════════════════ -->
 <script>
     const PLOTLY_CONFIG = {
         responsive: true,
@@ -556,12 +550,11 @@
     };
 
     function fmt(v, digits=1) {
-        if (v == null || isNaN(v)) return '—';
+        if (v == null || isNaN(v)) return '-';
         return parseFloat(v).toLocaleString('en-US', { maximumFractionDigits: digits });
     }
 
     function renderPlot(divId, data, layout) {
-        // Replace the loading spinner with the actual chart
         const el = document.getElementById(divId);
         el.className = '';
         el.style.minHeight = '';
@@ -577,7 +570,7 @@
             document.getElementById('stat-avg-lmp').innerHTML =
                 `<b>${fmt(d.lmp.average)}</b><span class="stat-unit"> $/MWh</span>`;
             document.getElementById('stat-lmp-range').textContent =
-                `Range: ${fmt(d.lmp.min)} – ${fmt(d.lmp.max)}`;
+                `Range: ${fmt(d.lmp.min)} to ${fmt(d.lmp.max)}`;
 
             document.getElementById('stat-load').innerHTML =
                 `<b>${fmt(d.load.average, 0)}</b><span class="stat-unit"> MW</span>`;
@@ -592,11 +585,10 @@
             const fuels = d.top_fuels;
             const topFuel = Object.keys(fuels)[0];
             document.getElementById('stat-top-fuel').innerHTML =
-                `<b>${topFuel || '—'}</b>`;
+                `<b>${topFuel || '-'}</b>`;
             document.getElementById('stat-top-fuel-mw').textContent =
-                topFuel ? `${fmt(fuels[topFuel], 0)} MW avg` : '—';
+                topFuel ? `${fmt(fuels[topFuel], 0)} MW avg` : '-';
 
-            // Renewable share from top_fuels
             const RENEWABLES = ['Solar','Wind','Large Hydro','Small Hydro','Geothermal','Biomass','Biogas'];
             const totalGen = Object.values(fuels).reduce((a,b) => a+b, 0);
             const renewGen = RENEWABLES.reduce((a,k) => a + (fuels[k] || 0), 0);
@@ -611,15 +603,14 @@
     async function loadPlots() {
         const btn = document.getElementById('refresh-btn');
         btn.disabled = true;
-        btn.textContent = '⏳ Loading…';
+        btn.textContent = 'Loading...';
 
-        // Reset spinners
         const spinners = [
-            ['plot-lmp',        'Fetching LMP data…'],
-            ['plot-hubs',       'Fetching hub data…'],
-            ['plot-fuel-stack', 'Fetching fuel mix…'],
-            ['plot-fuel-pie',   'Calculating…'],
-            ['plot-load',       'Fetching load data…'],
+            ['plot-lmp',        'Fetching LMP data...'],
+            ['plot-hubs',       'Fetching hub data...'],
+            ['plot-fuel-stack', 'Fetching fuel mix...'],
+            ['plot-fuel-pie',   'Calculating...'],
+            ['plot-load',       'Fetching load data...'],
         ];
         spinners.forEach(([id, msg]) => {
             document.getElementById(id).innerHTML = `
@@ -647,7 +638,9 @@
             renderPlot('plot-load',       p.load_profile.data,    p.load_profile.layout);
 
             const ts = new Date(d.timestamp);
-            document.getElementById('last-updated').textContent = ts.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) + ' — ' + ts.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+            document.getElementById('last-updated').textContent =
+                'Updated ' + ts.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles', timeZoneName: 'short' }) +
+                ', ' + ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' });
 
         } catch(e) {
             console.error(e);
@@ -661,7 +654,7 @@
             spinners.forEach(([id]) => { document.getElementById(id).innerHTML = ''; });
         } finally {
             btn.disabled = false;
-            btn.textContent = '↺ Refresh';
+            btn.textContent = 'Refresh';
         }
     }
 
@@ -670,7 +663,7 @@
     }
 
     window.addEventListener('load', loadAll);
-    setInterval(loadAll, 10 * 60 * 1000);   // auto-refresh every 10 min
+    setInterval(loadAll, 10 * 60 * 1000);
 </script>
 </body>
 </html>
