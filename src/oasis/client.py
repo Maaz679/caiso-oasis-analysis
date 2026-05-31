@@ -10,7 +10,9 @@ Data sources:
 - System load (demand)
 """
 
+import io
 import logging
+import zipfile
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 import pandas as pd
@@ -29,6 +31,18 @@ class CAISOClient:
     """
 
     OASIS_BASE_URL = "http://oasis.caiso.com/oasisapi/SingleZip"
+
+    @staticmethod
+    def _parse_oasis_response(content: bytes) -> pd.DataFrame:
+        """Parse CAISO OASIS response — handles ZIP (resultformat=6) and plain CSV."""
+        if content[:2] == b'PK':
+            with zipfile.ZipFile(io.BytesIO(content)) as zf:
+                csv_name = next((f for f in zf.namelist() if f.endswith('.csv')), None)
+                if not csv_name:
+                    raise ValueError("No CSV found in CAISO ZIP response")
+                with zf.open(csv_name) as f:
+                    return pd.read_csv(f, encoding='utf-8', errors='replace')
+        return pd.read_csv(io.BytesIO(content), encoding='utf-8', errors='replace')
 
     def __init__(self, use_cache: bool = True):
         """
@@ -133,11 +147,8 @@ class CAISOClient:
         response = self.session.get(self.OASIS_BASE_URL, params=params, timeout=60)
         response.raise_for_status()
 
-        # Parse CSV response (OASIS returns zip file with CSV)
-        # This is a simplified version - full implementation would handle zip extraction
-        df = pd.read_csv(pd.io.common.BytesIO(response.content))
+        df = self._parse_oasis_response(response.content)
 
-        # Standardize columns
         df = df.rename(columns={
             'INTERVALSTARTTIME_GMT': 'timestamp',
             'NODE': 'location',
@@ -217,9 +228,8 @@ class CAISOClient:
         response = self.session.get(self.OASIS_BASE_URL, params=params, timeout=60)
         response.raise_for_status()
 
-        df = pd.read_csv(pd.io.common.BytesIO(response.content))
+        df = self._parse_oasis_response(response.content)
 
-        # Transform to standard format
         df = df.rename(columns={
             'INTERVALSTARTTIME_GMT': 'timestamp',
             'FUEL_TYPE': 'fuel_type',
@@ -298,9 +308,8 @@ class CAISOClient:
         response = self.session.get(self.OASIS_BASE_URL, params=params, timeout=60)
         response.raise_for_status()
 
-        df = pd.read_csv(pd.io.common.BytesIO(response.content))
+        df = self._parse_oasis_response(response.content)
 
-        # Standardize columns
         df = df.rename(columns={
             'INTERVALSTARTTIME_GMT': 'timestamp',
             'LOAD': 'load_mw',
