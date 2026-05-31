@@ -317,7 +317,7 @@
       </div>
     </div>
     <nav class="nav-tabs">
-      <button class="nav-tab active" onclick="scrollTo('#kpi-section')">Overview</button>
+      <button class="nav-tab active" onclick="scrollTo('#chart-section')">Overview</button>
       <button class="nav-tab" onclick="scrollTo('#chart-section')">LMP</button>
       <button class="nav-tab" onclick="scrollTo('#chart-section'); activateTab('hubs')">Hubs</button>
       <button class="nav-tab" onclick="scrollTo('#chart-section'); activateTab('fuel')">Fuel Mix</button>
@@ -349,92 +349,6 @@
 </div>
 
 <main class="main">
-
-  <!-- KPI GRID -->
-  <section class="kpi-section" id="kpi-section">
-    <div class="kpi-section-title">
-      <span class="health-dot live"></span>
-      California Grid Status · NP15
-    </div>
-    <div class="kpi-grid">
-
-      <div class="kpi-card">
-        <div class="kpi-top">
-          <span class="kpi-label">Avg LMP (12h)</span>
-          <span class="kpi-badge badge badge-normal" id="kpi-badge-lmp" style="font-size:0.55rem;">—</span>
-        </div>
-        <div class="kpi-value-row">
-          <span class="kpi-unit">$</span>
-          <span class="kpi-value" id="kv-avg-lmp">—</span>
-          <span class="kpi-unit">/MWh</span>
-        </div>
-        <div class="kpi-sub" id="ks-lmp">—</div>
-        <canvas class="kpi-sparkline" id="spark-lmp" width="200" height="36"></canvas>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-top">
-          <span class="kpi-label">System Load</span>
-          <span class="kpi-badge badge badge-normal" id="kpi-badge-load">CAISO</span>
-        </div>
-        <div class="kpi-value-row">
-          <span class="kpi-value" id="kv-load">—</span>
-          <span class="kpi-unit">GW</span>
-        </div>
-        <div class="kpi-sub" id="ks-load">—</div>
-        <canvas class="kpi-sparkline" id="spark-load" width="200" height="36"></canvas>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-top">
-          <span class="kpi-label">Peak LMP (12h)</span>
-          <span class="kpi-badge badge badge-warning" id="kpi-badge-peak">—</span>
-        </div>
-        <div class="kpi-value-row">
-          <span class="kpi-unit">$</span>
-          <span class="kpi-value" id="kv-peak">—</span>
-          <span class="kpi-unit">/MWh</span>
-        </div>
-        <div class="kpi-sub" id="ks-peak">—</div>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-top">
-          <span class="kpi-label">Renewable Share</span>
-          <span class="kpi-badge badge badge-normal" id="kpi-badge-ren">—</span>
-        </div>
-        <div class="kpi-value-row">
-          <span class="kpi-value" id="kv-ren">—</span>
-          <span class="kpi-unit">%</span>
-        </div>
-        <div class="kpi-sub" id="ks-ren">Solar + Wind + Hydro</div>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-top">
-          <span class="kpi-label">Battery Storage</span>
-          <span class="kpi-badge badge" id="kpi-badge-batt" style="font-size:0.55rem;">—</span>
-        </div>
-        <div class="kpi-value-row">
-          <span class="kpi-value" id="kv-batt">—</span>
-          <span class="kpi-unit">MW</span>
-        </div>
-        <div class="kpi-sub" id="ks-batt">—</div>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-top">
-          <span class="kpi-label">Top Fuel Source</span>
-          <span class="kpi-badge badge badge-normal">GEN</span>
-        </div>
-        <div class="kpi-value-row" style="align-items:center;">
-          <span class="kpi-value" id="kv-fuel" style="font-size:1.1rem;letter-spacing:-0.01em;">—</span>
-        </div>
-        <div class="kpi-sub" id="ks-fuel">—</div>
-      </div>
-
-    </div>
-  </section>
 
   <!-- ANALYST SUMMARY -->
   <section class="analyst-section">
