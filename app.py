@@ -19,6 +19,7 @@ from notebooks.plotly_viz import (
     plot_fuel_mix,
     plot_fuel_mix_pie,
     plot_load_profile,
+    plot_battery,
 )
 
 app = Flask(__name__)
@@ -84,6 +85,7 @@ def get_plots():
             'fuel_mix_stack': json.loads(plot_fuel_mix(fuel_mix).to_json()),
             'fuel_mix_pie':   json.loads(plot_fuel_mix_pie(fuel_mix).to_json()),
             'load_profile':   json.loads(plot_load_profile(load).to_json()),
+            'battery':        json.loads(plot_battery(fuel_mix).to_json()),
         }
 
         return jsonify({

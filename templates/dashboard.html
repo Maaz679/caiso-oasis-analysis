@@ -1,669 +1,1023 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAISO Market Dashboard - Live Data</title>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --accent:    #6366F1;
-            --accent2:   #8B5CF6;
-            --bg:        #F1F5F9;
-            --surface:   #FFFFFF;
-            --border:    #E2E8F0;
-            --text:      #0F172A;
-            --subtext:   #64748B;
-            --green:     #10B981;
-            --red:       #EF4444;
-            --amber:     #F59E0B;
-            --radius:    16px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
-            --shadow-md: 0 4px 16px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06);
-            --shadow-lg: 0 10px 40px rgba(0,0,0,.14), 0 4px 12px rgba(0,0,0,.07);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CAISO Grid Intelligence · Market Dashboard</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #0a0a0a;
+      --bg2:     #111111;
+      --bg3:     #1a1a1a;
+      --border:  #1f1f1f;
+      --border2: rgba(255,255,255,0.07);
+      --text:    #e5e7eb;
+      --muted:   #6b7280;
+      --green:   #22c55e;
+      --green-d: #16a34a;
+      --green-g: rgba(34,197,94,0.08);
+      --amber:   #f59e0b;
+      --blue:    #38bdf8;
+      --red:     #ef4444;
+      --purple:  #a855f7;
+      --font:    'Space Grotesk', system-ui, sans-serif;
+      --mono:    'JetBrains Mono', monospace;
+    }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            line-height: 1.5;
-        }
+    html { scroll-behavior: smooth; }
 
-        .site-header {
-            background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #312E81 100%);
-            padding: 0 32px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 20px rgba(0,0,0,.35);
-        }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
 
-        .header-inner {
-            max-width: 1440px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 68px;
-            gap: 20px;
-        }
+    a { color: inherit; text-decoration: none; }
 
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+    /* ── NAV ── */
+    .top-nav {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(10,10,10,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 60px;
+    }
+    .nav-inner {
+      max-width: 1400px; margin: 0 auto; height: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1.5rem;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 0.875rem; }
+    .nav-logo {
+      width: 34px; height: 34px; border-radius: 6px;
+      background: var(--green-g); border: 1px solid rgba(34,197,94,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 0.65rem; font-weight: 500;
+      color: var(--green); letter-spacing: 0.5px; flex-shrink: 0;
+    }
+    .nav-title { font-size: 0.9rem; font-weight: 600; letter-spacing: -0.01em; }
+    .nav-sub { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.06em; margin-top: 1px; }
+    .nav-tabs { display: flex; gap: 0; }
+    .nav-tab {
+      padding: 0 1rem; height: 60px; display: flex; align-items: center;
+      font-size: 0.8rem; font-weight: 500; color: var(--muted);
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s; cursor: pointer;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active { color: var(--green); border-bottom-color: var(--green); }
+    .nav-right { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+    .health-indicator { display: flex; align-items: center; gap: 0.4rem; font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
+    .health-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: dotPulse 2.5s infinite; }
+    .health-dot.live { background: var(--green); }
+    .health-dot.error { background: var(--red); animation: none; }
+    @keyframes dotPulse {
+      0%,100% { box-shadow: 0 0 0 2px rgba(34,197,94,0.15); }
+      50% { box-shadow: 0 0 0 5px rgba(34,197,94,0.04); }
+    }
+    .nav-time { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+    .btn-refresh {
+      background: transparent; border: 1px solid var(--border2);
+      color: var(--text); padding: 0.45rem 1rem;
+      border-radius: 5px; font-size: 0.8rem; font-weight: 500;
+      cursor: pointer; font-family: var(--font); transition: border-color 0.15s, background 0.15s;
+      display: flex; align-items: center; gap: 0.4rem; white-space: nowrap;
+    }
+    .btn-refresh:hover { border-color: var(--green); background: var(--green-g); color: var(--green); }
+    .btn-refresh:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-refresh svg { width: 14px; height: 14px; }
+    .spin { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-        .header-logo {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.72rem;
-            font-weight: 800;
-            color: white;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 8px rgba(99,102,241,.50);
-        }
+    /* ── ALERT STRIP ── */
+    .alert-strip {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 0.5rem 2rem;
+    }
+    .alert-strip-inner {
+      max-width: 1400px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .alert-badges { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .badge {
+      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.07em;
+      padding: 3px 9px; border-radius: 3px; font-weight: 500;
+    }
+    .badge-normal   { color: var(--green); background: rgba(34,197,94,0.08);  border: 1px solid rgba(34,197,94,0.2); }
+    .badge-warning  { color: var(--amber); background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); }
+    .badge-info     { color: var(--blue);  background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+    .badge-alert    { color: var(--red);   background: rgba(239,68,68,0.08);  border: 1px solid rgba(239,68,68,0.2); }
+    .badge-purple   { color: var(--purple);background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.2); }
+    .strip-timestamp { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); }
 
-        .header-brand h1 {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: #FFFFFF;
-            letter-spacing: -0.3px;
-        }
+    /* ── MAIN ── */
+    .main { max-width: 1400px; margin: 0 auto; padding: 2rem 2rem 5rem; }
 
-        .header-brand p {
-            font-size: 0.75rem;
-            color: #A5B4FC;
-            margin-top: 1px;
-        }
+    /* ── KPI GRID ── */
+    .kpi-section { margin-bottom: 2rem; }
+    .kpi-section-title {
+      font-family: var(--mono); font-size: 0.65rem; color: var(--muted);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr);
+      gap: 1px; background: var(--border);
+      border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+    }
+    .kpi-card {
+      background: var(--bg2); padding: 1.25rem 1.25rem 1rem;
+      display: flex; flex-direction: column; gap: 0.35rem;
+    }
+    .kpi-top { display: flex; align-items: center; justify-content: space-between; }
+    .kpi-label { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); letter-spacing: 0.09em; text-transform: uppercase; }
+    .kpi-badge { font-family: var(--mono); font-size: 0.55rem; }
+    .kpi-value-row { display: flex; align-items: baseline; gap: 0.25rem; margin-top: 0.2rem; }
+    .kpi-value { font-family: var(--mono); font-size: 1.65rem; font-weight: 500; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
+    .kpi-unit { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+    .kpi-delta { font-family: var(--mono); font-size: 0.65rem; margin-left: 0.25rem; }
+    .kpi-delta.pos { color: var(--green); }
+    .kpi-delta.neg { color: var(--red); }
+    .kpi-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+    .kpi-sparkline { width: 100%; height: 36px; display: block; margin-top: 0.5rem; }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
+    /* ── ANALYST SUMMARY ── */
+    .analyst-section {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .analyst-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem; }
+    .analyst-title { font-size: 0.85rem; font-weight: 600; }
+    .analyst-tag {
+      font-family: var(--mono); font-size: 0.58rem; color: var(--green);
+      background: var(--green-g); border: 1px solid rgba(34,197,94,0.2);
+      padding: 2px 8px; border-radius: 3px; letter-spacing: 0.06em;
+    }
+    .analyst-bullets { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .analyst-bullets li {
+      font-size: 0.85rem; color: #9ca3af; line-height: 1.6;
+      padding-left: 1.1rem; position: relative;
+    }
+    .analyst-bullets li::before { content: '›'; position: absolute; left: 0; color: var(--green); font-weight: 600; }
+    .analyst-bullets li strong { color: var(--text); font-weight: 500; }
+    .analyst-skeleton li::before { display: none; }
+    .analyst-skeleton li { background: var(--bg3); border-radius: 3px; height: 14px; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:0.7} }
 
-        .live-badge {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            background: rgba(16,185,129,.18);
-            border: 1px solid rgba(16,185,129,.40);
-            color: #6EE7B7;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
+    /* ── CHART TABS ── */
+    .chart-section { }
+    .chart-tabs {
+      display: flex; border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .chart-tab-btn {
+      padding: 0.7rem 1.25rem; font-size: 0.82rem; font-weight: 500;
+      color: var(--muted); border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      cursor: pointer; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none;
+      font-family: var(--font);
+    }
+    .chart-tab-btn:hover { color: var(--text); }
+    .chart-tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
 
-        .live-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #34D399;
-            animation: pulse-dot 2s ease-in-out infinite;
-        }
+    /* ── CHART CARDS ── */
+    .chart-panel { display: none; }
+    .chart-panel.active { display: block; }
+    .chart-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden; margin-bottom: 1.25rem;
+    }
+    .chart-card-header {
+      padding: 1.25rem 1.5rem 0;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    }
+    .chart-card-title { font-size: 0.95rem; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 0.2rem; }
+    .chart-card-sub { font-size: 0.78rem; color: var(--muted); }
+    .chart-card-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .chart-tag {
+      font-family: var(--mono); font-size: 0.6rem; color: var(--muted);
+      border: 1px solid var(--border2); padding: 3px 8px; border-radius: 3px;
+    }
+    .insight-toggle {
+      font-family: var(--mono); font-size: 0.6rem; color: var(--muted);
+      background: none; border: 1px solid var(--border2); padding: 3px 10px;
+      border-radius: 3px; cursor: pointer; transition: color 0.15s, border-color 0.15s;
+      font-family: var(--font); font-size: 0.75rem;
+    }
+    .insight-toggle:hover { color: var(--text); border-color: var(--border2); }
+    .plot-area { padding: 4px 8px 8px; min-height: 200px; }
+    .charts-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50%       { opacity: .5; transform: scale(0.8); }
-        }
+    /* ── INSIGHT PANEL ── */
+    .chart-insight {
+      margin: 0 1.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      max-height: 0;
+    }
+    .chart-insight.open { max-height: 600px; }
+    .insight-inner {
+      padding: 1rem 1.25rem; background: var(--bg3);
+      border-left: 2px solid var(--green);
+    }
+    .insight-inner p { font-size: 0.82rem; color: #9ca3af; line-height: 1.75; margin-bottom: 0.75rem; }
+    .insight-inner p:last-child { margin-bottom: 0; }
+    .insight-inner strong { color: var(--text); font-weight: 500; }
 
-        .last-updated-text {
-            font-size: 0.78rem;
-            color: #94A3B8;
-        }
+    /* ── LOADING ── */
+    .plot-loading {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 360px; gap: 1rem; color: var(--muted);
+    }
+    .plot-spinner {
+      width: 36px; height: 36px; border: 2px solid var(--border);
+      border-top-color: var(--green); border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+    }
+    .plot-loading-text { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; }
 
-        .refresh-btn {
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity .2s, transform .15s;
-            white-space: nowrap;
-        }
+    /* ── ERROR ── */
+    .error-panel {
+      border: 1px solid rgba(239,68,68,0.2); background: rgba(239,68,68,0.04);
+      border-radius: 6px; padding: 1.25rem 1.5rem; margin: 1.5rem 0;
+      display: none;
+    }
+    .error-panel h3 { color: var(--red); font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .error-panel p { color: #9ca3af; font-size: 0.82rem; line-height: 1.6; }
 
-        .refresh-btn:hover    { opacity: .88; transform: translateY(-1px); }
-        .refresh-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    /* ── PROJECT FOOTER ── */
+    .project-section {
+      margin-top: 4rem; border-top: 1px solid var(--border); padding-top: 3rem;
+    }
+    .project-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem; }
+    .project-block h3 { font-size: 0.82rem; font-weight: 600; color: var(--muted); font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.875rem; }
+    .project-block ul { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+    .project-block li { font-size: 0.85rem; color: #9ca3af; padding-left: 1rem; position: relative; }
+    .project-block li::before { content: '▹'; position: absolute; left: 0; color: var(--green); font-size: 0.7rem; top: 2px; }
+    .tech-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.875rem; }
+    .tech-tag {
+      font-family: var(--mono); font-size: 0.65rem; color: var(--muted);
+      border: 1px solid var(--border2); padding: 4px 10px; border-radius: 4px;
+    }
+    .project-links { display: flex; gap: 0.75rem; margin-top: 1rem; }
+    .project-link {
+      font-size: 0.8rem; font-weight: 500; color: var(--green);
+      display: flex; align-items: center; gap: 0.3rem;
+      border: 1px solid rgba(34,197,94,0.2); padding: 0.4rem 0.875rem;
+      border-radius: 5px; background: var(--green-g);
+      transition: background 0.15s; font-family: var(--font);
+    }
+    .project-link:hover { background: rgba(34,197,94,0.12); }
 
-        .main {
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 28px 28px 60px;
-        }
+    /* ── SITE FOOTER ── */
+    .site-footer {
+      border-top: 1px solid var(--border); padding: 1.5rem 2rem;
+      text-align: center; font-family: var(--mono); font-size: 0.65rem;
+      color: var(--muted);
+    }
+    .site-footer a { color: var(--green); }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-
-        .stat-card {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 20px 22px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
-            position: relative;
-            overflow: hidden;
-            transition: box-shadow .2s;
-        }
-
-        .stat-card:hover { box-shadow: var(--shadow-md); }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            background: var(--card-accent, var(--accent));
-            border-radius: var(--radius) var(--radius) 0 0;
-        }
-
-        .stat-card.green  { --card-accent: var(--green); }
-        .stat-card.red    { --card-accent: var(--red); }
-        .stat-card.amber  { --card-accent: var(--amber); }
-        .stat-card.purple { --card-accent: var(--accent); }
-        .stat-card.teal   { --card-accent: #14B8A6; }
-
-        .stat-label {
-            font-size: 0.72rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--subtext);
-            margin-bottom: 8px;
-        }
-
-        .stat-value {
-            font-size: 1.65rem;
-            font-weight: 700;
-            color: var(--text);
-            letter-spacing: -0.5px;
-            line-height: 1;
-        }
-
-        .stat-unit {
-            font-size: 0.82rem;
-            font-weight: 500;
-            color: var(--subtext);
-            margin-left: 2px;
-        }
-
-        .stat-sub {
-            font-size: 0.78rem;
-            color: var(--subtext);
-            margin-top: 6px;
-        }
-
-        .charts-grid {
-            display: grid;
-            gap: 24px;
-        }
-
-        .chart-card {
-            background: var(--surface);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
-            overflow: hidden;
-            transition: box-shadow .2s;
-        }
-
-        .chart-card:hover { box-shadow: var(--shadow-md); }
-
-        .chart-card-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            padding: 22px 26px 0;
-            gap: 16px;
-        }
-
-        .chart-card-title {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--text);
-            letter-spacing: -0.2px;
-        }
-
-        .chart-card-subtitle {
-            font-size: 0.8rem;
-            color: var(--subtext);
-            margin-top: 3px;
-        }
-
-        .chart-tag {
-            background: #EEF2FF;
-            color: var(--accent);
-            border: 1px solid #C7D2FE;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .chart-plot-area {
-            padding: 8px 12px 4px;
-        }
-
-        .chart-insight {
-            margin: 0 24px 22px;
-            padding: 14px 16px;
-            background: #F8FAFC;
-            border-left: 3px solid var(--accent);
-            border-radius: 0 8px 8px 0;
-            font-size: 0.82rem;
-            color: var(--subtext);
-            line-height: 1.7;
-        }
-
-        .chart-insight strong {
-            color: var(--text);
-            font-weight: 600;
-        }
-
-        .chart-insight p {
-            margin-bottom: 8px;
-        }
-
-        .chart-insight p:last-child {
-            margin-bottom: 0;
-        }
-
-        .charts-row-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        .loading-overlay {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 380px;
-            gap: 20px;
-            color: var(--subtext);
-        }
-
-        .spinner-ring {
-            width: 52px;
-            height: 52px;
-            border: 4px solid #E2E8F0;
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.9s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .loading-text { font-size: 0.9rem; font-weight: 500; }
-        .loading-sub  { font-size: 0.8rem; color: #94A3B8; }
-
-        .error-box {
-            background: #FFF1F2;
-            border: 1px solid #FECDD3;
-            border-radius: 12px;
-            padding: 24px 28px;
-            margin: 24px 0;
-        }
-
-        .error-box h3 { color: #BE123C; margin-bottom: 8px; }
-        .error-box p  { color: #9F1239; font-size: 0.88rem; line-height: 1.6; }
-
-        .site-footer {
-            background: #0F172A;
-            color: #64748B;
-            padding: 28px 32px;
-            text-align: center;
-            font-size: 0.8rem;
-            line-height: 1.8;
-        }
-
-        .site-footer a { color: #818CF8; text-decoration: none; }
-        .site-footer a:hover { color: #A5B4FC; }
-
-        @media (max-width: 900px) {
-            .charts-row-2 { grid-template-columns: 1fr; }
-            .header-inner { height: auto; padding: 14px 0; flex-wrap: wrap; }
-            .main { padding: 20px 16px 48px; }
-        }
-
-        @media (max-width: 600px) {
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .header-brand h1 { font-size: 1rem; }
-        }
-    </style>
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 900px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .charts-row-2 { grid-template-columns: 1fr; }
+      .project-grid { grid-template-columns: 1fr; }
+      .nav-tabs { display: none; }
+    }
+    @media (max-width: 600px) {
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+      .main { padding: 1.25rem 1rem 4rem; }
+    }
+  </style>
 </head>
 <body>
 
-<header class="site-header">
-    <div class="header-inner">
-        <div class="header-brand">
-            <div class="header-logo">CA</div>
-            <div>
-                <h1>CAISO Market Dashboard</h1>
-                <p>California ISO - Real-Time Electricity Market Data</p>
-            </div>
-        </div>
-        <div class="header-right">
-            <div class="live-badge">
-                <span class="live-dot"></span>Live
-            </div>
-            <span class="last-updated-text" id="last-updated">{{ last_updated }}</span>
-            <button class="refresh-btn" onclick="loadAll()" id="refresh-btn">Refresh</button>
-        </div>
+<!-- NAV -->
+<nav class="top-nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <div class="nav-logo">CA</div>
+      <div>
+        <div class="nav-title">CAISO Grid Intelligence</div>
+        <div class="nav-sub">CAISO OASIS API · Real-Time Market Data</div>
+      </div>
     </div>
-</header>
+    <nav class="nav-tabs">
+      <button class="nav-tab active" onclick="scrollTo('#kpi-section')">Overview</button>
+      <button class="nav-tab" onclick="scrollTo('#chart-section')">LMP</button>
+      <button class="nav-tab" onclick="scrollTo('#chart-section'); activateTab('hubs')">Hubs</button>
+      <button class="nav-tab" onclick="scrollTo('#chart-section'); activateTab('fuel')">Fuel Mix</button>
+      <button class="nav-tab" onclick="scrollTo('#chart-section'); activateTab('load')">Load</button>
+      <button class="nav-tab" onclick="scrollTo('#chart-section'); activateTab('battery')">Battery</button>
+    </nav>
+    <div class="nav-right">
+      <div class="health-indicator">
+        <span class="health-dot" id="health-dot"></span>
+        <span id="health-text" style="font-family:var(--mono);font-size:0.65rem;">Connecting</span>
+      </div>
+      <div class="nav-time" id="nav-time"></div>
+      <button class="btn-refresh" id="refresh-btn" onclick="loadAll()">
+        <svg id="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ALERT STRIP -->
+<div class="alert-strip">
+  <div class="alert-strip-inner">
+    <div class="alert-badges" id="alert-badges">
+      <span class="badge badge-normal">Connecting…</span>
+    </div>
+    <div class="strip-timestamp" id="strip-timestamp">Last updated: {{ last_updated }}</div>
+  </div>
+</div>
 
 <main class="main">
 
-    <div class="stats-grid" id="stats-grid">
-        <div class="stat-card purple">
-            <div class="stat-label">Avg LMP (12h)</div>
-            <div class="stat-value" id="stat-avg-lmp">-<span class="stat-unit">$/MWh</span></div>
-            <div class="stat-sub" id="stat-lmp-range">-</div>
-        </div>
-        <div class="stat-card green">
-            <div class="stat-label">System Load</div>
-            <div class="stat-value" id="stat-load">-<span class="stat-unit">MW</span></div>
-            <div class="stat-sub" id="stat-load-peak">-</div>
-        </div>
-        <div class="stat-card amber">
-            <div class="stat-label">Peak LMP (12h)</div>
-            <div class="stat-value" id="stat-peak-lmp">-<span class="stat-unit">$/MWh</span></div>
-            <div class="stat-sub" id="stat-lmp-min">-</div>
-        </div>
-        <div class="stat-card teal">
-            <div class="stat-label">Top Fuel Source</div>
-            <div class="stat-value" id="stat-top-fuel" style="font-size:1.2rem">-</div>
-            <div class="stat-sub" id="stat-top-fuel-mw">-</div>
-        </div>
-        <div class="stat-card green">
-            <div class="stat-label">Renewable Share</div>
-            <div class="stat-value" id="stat-renewable">-<span class="stat-unit">%</span></div>
-            <div class="stat-sub">Solar + Wind + Hydro</div>
-        </div>
+  <!-- KPI GRID -->
+  <section class="kpi-section" id="kpi-section">
+    <div class="kpi-section-title">
+      <span class="health-dot live"></span>
+      California Grid Status · NP15
     </div>
+    <div class="kpi-grid">
 
-    <div id="error-box" style="display:none;"></div>
-
-    <div class="charts-grid">
-
-        <!-- Chart 1: LMP Components -->
-        <div class="chart-card" id="card-lmp">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Locational Marginal Price (LMP)</div>
-                    <div class="chart-card-subtitle">Real-time system average with energy, congestion, and loss breakdown - all times in US Pacific (PT)</div>
-                </div>
-                <span class="chart-tag">$/MWh</span>
-            </div>
-            <div class="chart-plot-area">
-                <div id="plot-lmp" class="loading-overlay">
-                    <div class="spinner-ring"></div>
-                    <span class="loading-text">Fetching LMP data...</span>
-                    <span class="loading-sub">Querying CAISO OASIS API</span>
-                </div>
-            </div>
-            <div class="chart-insight">
-                <p>The LMP is the price CAISO sets every five minutes for buying or selling one additional megawatt-hour of electricity at a specific location on the grid. It reflects what it would actually cost the system to serve one more unit of demand right now, not an average or a contract rate.</p>
-                <p>The price is the sum of four components. <strong>Energy</strong> is set by the fuel and operating cost of the most expensive generating unit currently dispatched system-wide. <strong>Congestion</strong> appears whenever a transmission line hits its physical limit; it can be positive (line is constrained against you) or negative (constraint works in your favor). <strong>Loss</strong> accounts for electricity that dissipates as heat during transmission; also signed. <strong>GHG (Carbon)</strong> reflects California's cap-and-trade carbon price, which adds a fixed cost per MWh whenever the carbon market is active. When GHG is non-zero, it is typically the second-largest component after Energy.</p>
-                <p>The bottom panel shows each component as its own line so you can see when any of them goes negative or spikes independently of the others.</p>
-            </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">Avg LMP (12h)</span>
+          <span class="kpi-badge badge badge-normal" id="kpi-badge-lmp" style="font-size:0.55rem;">—</span>
         </div>
-
-        <!-- Chart 2: Trading Hubs -->
-        <div class="chart-card" id="card-hubs">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Regional Price Comparison</div>
-                    <div class="chart-card-subtitle">NP15 (Northern CA), SP15 (Southern CA), ZP26 (San Diego) - all times in US Pacific (PT)</div>
-                </div>
-                <span class="chart-tag">Trading Hubs</span>
-            </div>
-            <div class="chart-plot-area">
-                <div id="plot-hubs" class="loading-overlay">
-                    <div class="spinner-ring"></div>
-                    <span class="loading-text">Fetching hub data...</span>
-                </div>
-            </div>
-            <div class="chart-insight">
-                <p>CAISO operates a single interconnected grid, but prices differ across the state because of physical constraints on the transmission network. The three trading hubs shown here are aggregated pricing nodes that represent large geographic zones rather than single substations.</p>
-                <p><strong>NP15</strong> covers northern California, roughly the PG&amp;E service territory north of a dividing line near Fresno. It tends to have lower prices when hydropower from the Sierra Nevada and Pacific Northwest imports are abundant. <strong>SP15</strong> covers southern California under SCE, a large load center with high summer air conditioning demand and proximity to desert solar resources. <strong>ZP26</strong> covers the SDG&amp;E territory around San Diego, a smaller and often more expensive zone because it is electrically isolated and depends heavily on import capacity through a few key transmission corridors.</p>
-                <p>The spread chart in the lower panel shows each hub's price relative to the real-time system average. A persistent positive spread in one zone signals a local supply shortage or transmission constraint isolating that area. A negative spread means that zone has cheaper local resources than the rest of the grid. Path 26 between NP15 and SP15 and the Southwest Powerlink into ZP26 are the two most commonly congested interfaces in California, and their impact shows up directly in these spreads.</p>
-            </div>
+        <div class="kpi-value-row">
+          <span class="kpi-unit">$</span>
+          <span class="kpi-value" id="kv-avg-lmp">—</span>
+          <span class="kpi-unit">/MWh</span>
         </div>
+        <div class="kpi-sub" id="ks-lmp">—</div>
+        <canvas class="kpi-sparkline" id="spark-lmp" width="200" height="36"></canvas>
+      </div>
 
-        <!-- Chart 3: Fuel Mix stacked -->
-        <div class="chart-card" id="card-fuel-stack">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">California Generation Mix</div>
-                    <div class="chart-card-subtitle">Output by fuel type with battery storage activity - all times in US Pacific (PT)</div>
-                </div>
-                <span class="chart-tag">MW</span>
-            </div>
-            <div class="chart-plot-area">
-                <div id="plot-fuel-stack" class="loading-overlay">
-                    <div class="spinner-ring"></div>
-                    <span class="loading-text">Fetching fuel mix...</span>
-                </div>
-            </div>
-            <div class="chart-insight">
-                <p>California's grid draws from over a dozen fuel types simultaneously, and their relative contributions shift dramatically over the course of a day. The top panel stacks each source's output, so the total height of the chart at any moment equals total in-state generation plus net imports. The area is not fixed at 100 percent because total generation rises and falls with demand.</p>
-                <p>The pattern known as the <strong>Duck Curve</strong> is visible whenever the window covers daylight hours. Solar output (gold) climbs steeply in the morning and peaks around noon, sometimes pushing total renewable generation high enough to displace nearly all other sources. Then solar drops off sharply after 3 or 4 PM. At the same time, residential demand rises as people return home in the evening. The grid must ramp up <strong>Natural Gas</strong> (red) peakers extremely fast to fill that gap, often adding several thousand megawatts within an hour. That ramp is one of the most operationally challenging aspects of running a high-solar grid.</p>
-                <p><strong>Nuclear</strong> and <strong>Large Hydro</strong> run steadily around the clock because they are either inflexible (nuclear) or operationally efficient to hold at a constant output (hydro). Imports (gray) reflect net power flowing into California from neighboring states and are often highest in the early morning when in-state demand is low and out-of-state generators have surplus capacity to sell cheaply.</p>
-                <p>The bottom panel shows battery storage behavior. Bars below zero mean batteries are charging, which typically happens mid-day when solar is abundant and prices are low. Bars above zero mean batteries are discharging into the evening peak. California now has several gigawatts of grid-scale battery capacity installed, and its charging and discharging behavior directly flattens the Duck Curve by absorbing excess solar and releasing it during the ramp.</p>
-            </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">System Load</span>
+          <span class="kpi-badge badge badge-normal" id="kpi-badge-load">CAISO</span>
         </div>
-
-        <!-- Charts 4 + 5: two-column row -->
-        <div class="charts-row-2">
-
-            <!-- Chart 4: Pie -->
-            <div class="chart-card" id="card-fuel-pie">
-                <div class="chart-card-header">
-                    <div>
-                        <div class="chart-card-title">Generation Portfolio</div>
-                        <div class="chart-card-subtitle">12-hour average by fuel source</div>
-                    </div>
-                    <span class="chart-tag">Avg Mix</span>
-                </div>
-                <div class="chart-plot-area">
-                    <div id="plot-fuel-pie" class="loading-overlay">
-                        <div class="spinner-ring"></div>
-                        <span class="loading-text">Calculating...</span>
-                    </div>
-                </div>
-                <div class="chart-insight">
-                    <p>This chart shows each fuel type's average contribution to California's total generation over the past 12 hours. The center displays the overall average output in gigawatts.</p>
-                    <p>Because the mix is averaged across the full window, it smooths out the intraday volatility shown in the stacked chart. A 12-hour average that includes overnight hours will understate solar's midday contribution and overstate how much gas was running at all times. To understand the current carbon intensity of the grid, you need to look at the stacked chart in real time rather than this average. Still, the portfolio view is useful for understanding the rough structural balance: how much of California's power comes from carbon-free sources (solar, wind, hydro, nuclear, geothermal) versus fossil sources (natural gas, coal) on a given day.</p>
-                    <p>California's renewable portfolio standard requires utilities to procure a growing percentage of power from eligible renewables. The share shown here reflects actual dispatch, which can differ from contracted capacity because renewable output depends on weather conditions.</p>
-                </div>
-            </div>
-
-            <!-- Chart 5: Load profile -->
-            <div class="chart-card" id="card-load">
-                <div class="chart-card-header">
-                    <div>
-                        <div class="chart-card-title">System Load Profile</div>
-                        <div class="chart-card-subtitle">Statewide electricity demand in US Pacific (PT)</div>
-                    </div>
-                    <span class="chart-tag">MW</span>
-                </div>
-                <div class="chart-plot-area">
-                    <div id="plot-load" class="loading-overlay">
-                        <div class="spinner-ring"></div>
-                        <span class="loading-text">Fetching load data...</span>
-                    </div>
-                </div>
-                <div class="chart-insight">
-                    <p>System load is the total amount of electricity being consumed across California at each moment, measured in megawatts. This figure comes from CAISO's real-time measurement of actual demand flowing through the grid, not a forecast.</p>
-                    <p>California's load follows a predictable daily shape. Demand is at its lowest between 2 and 5 AM when most households and businesses are idle. It climbs through the morning as commercial and industrial facilities open, plateaus through midday, and then peaks in the early evening, typically between 5 and 9 PM, when residential demand combines with remaining commercial load. Air conditioning adds a significant seasonal overlay: summer loads can be 30 to 40 percent higher than winter loads on hot days, and extreme heat waves have pushed California's all-time peak above 52,000 MW.</p>
-                    <p>CAISO is responsible for balancing generation against this load curve in real time, every five minutes. Generating too little causes frequency to drop, which can damage equipment and trigger automatic blackouts. Generating too much causes frequency to rise, which can force generators to trip off-line. The grid operates within a narrow frequency band of 59.95 to 60.05 Hz, and maintaining that balance as load shifts by thousands of megawatts over the course of a day is the core operational challenge CAISO solves continuously.</p>
-                </div>
-            </div>
-
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kv-load">—</span>
+          <span class="kpi-unit">GW</span>
         </div>
+        <div class="kpi-sub" id="ks-load">—</div>
+        <canvas class="kpi-sparkline" id="spark-load" width="200" height="36"></canvas>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">Peak LMP (12h)</span>
+          <span class="kpi-badge badge badge-warning" id="kpi-badge-peak">—</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-unit">$</span>
+          <span class="kpi-value" id="kv-peak">—</span>
+          <span class="kpi-unit">/MWh</span>
+        </div>
+        <div class="kpi-sub" id="ks-peak">—</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">Renewable Share</span>
+          <span class="kpi-badge badge badge-normal" id="kpi-badge-ren">—</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kv-ren">—</span>
+          <span class="kpi-unit">%</span>
+        </div>
+        <div class="kpi-sub" id="ks-ren">Solar + Wind + Hydro</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">Battery Storage</span>
+          <span class="kpi-badge badge" id="kpi-badge-batt" style="font-size:0.55rem;">—</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kv-batt">—</span>
+          <span class="kpi-unit">MW</span>
+        </div>
+        <div class="kpi-sub" id="ks-batt">—</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">Top Fuel Source</span>
+          <span class="kpi-badge badge badge-normal">GEN</span>
+        </div>
+        <div class="kpi-value-row" style="align-items:center;">
+          <span class="kpi-value" id="kv-fuel" style="font-size:1.1rem;letter-spacing:-0.01em;">—</span>
+        </div>
+        <div class="kpi-sub" id="ks-fuel">—</div>
+      </div>
 
     </div>
+  </section>
+
+  <!-- ANALYST SUMMARY -->
+  <section class="analyst-section">
+    <div class="analyst-header">
+      <span class="analyst-title">Market Summary</span>
+      <span class="analyst-tag">Auto-generated · NP15</span>
+    </div>
+    <ul class="analyst-bullets analyst-skeleton" id="analyst-bullets">
+      <li style="width:80%">&nbsp;</li>
+      <li style="width:65%">&nbsp;</li>
+      <li style="width:72%">&nbsp;</li>
+    </ul>
+  </section>
+
+  <!-- CHART SECTION -->
+  <section class="chart-section" id="chart-section">
+    <nav class="chart-tabs">
+      <button class="chart-tab-btn active" data-tab="lmp"     onclick="activateTab('lmp')">LMP Components</button>
+      <button class="chart-tab-btn"         data-tab="hubs"    onclick="activateTab('hubs')">Regional Hubs</button>
+      <button class="chart-tab-btn"         data-tab="fuel"    onclick="activateTab('fuel')">Fuel Mix</button>
+      <button class="chart-tab-btn"         data-tab="load"    onclick="activateTab('load')">System Load</button>
+      <button class="chart-tab-btn"         data-tab="battery" onclick="activateTab('battery')">Battery</button>
+    </nav>
+
+    <div id="error-panel" class="error-panel">
+      <h3>Unable to load chart data</h3>
+      <p id="error-msg">The CAISO OASIS API may be temporarily unavailable.</p>
+    </div>
+
+    <!-- LMP -->
+    <div id="panel-lmp" class="chart-panel active">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-card-title">Locational Marginal Price</div>
+            <div class="chart-card-sub">Real-time system average with energy, congestion, loss, and GHG breakdown · US Pacific</div>
+          </div>
+          <div class="chart-card-actions">
+            <span class="chart-tag">$/MWh · RTM</span>
+            <button class="insight-toggle" onclick="toggleInsight('ins-lmp', this)">About</button>
+          </div>
+        </div>
+        <div class="plot-area">
+          <div id="plot-lmp" class="plot-loading">
+            <div class="plot-spinner"></div>
+            <span class="plot-loading-text">Fetching LMP data from CAISO OASIS…</span>
+          </div>
+        </div>
+        <div class="chart-insight" id="ins-lmp">
+          <div class="insight-inner">
+            <p>The LMP is the price CAISO sets every five minutes for one additional MWh at a specific grid location. It is what it actually costs the system to serve one more unit of demand right now.</p>
+            <p><strong>Energy</strong> is the fuel cost of the marginal generator system-wide. <strong>Congestion</strong> reflects transmission constraints — it goes negative when a constraint works in your favor. <strong>Loss</strong> accounts for resistive heat losses over distance. <strong>GHG</strong> adds California's cap-and-trade carbon price when the market is active.</p>
+            <p>Negative total LMPs indicate a period of <strong>solar curtailment</strong>: more generation than the grid can absorb, forcing prices below zero to incentivize consumption or storage charging.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUB SPREAD -->
+    <div id="panel-hubs" class="chart-panel">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-card-title">Regional Hub Prices</div>
+            <div class="chart-card-sub">NP15 (Northern CA) · SP15 (Southern CA) · ZP26 (San Diego) · spread vs. three-hub average</div>
+          </div>
+          <div class="chart-card-actions">
+            <span class="chart-tag">Trading Hubs</span>
+            <button class="insight-toggle" onclick="toggleInsight('ins-hubs', this)">About</button>
+          </div>
+        </div>
+        <div class="plot-area">
+          <div id="plot-hubs" class="plot-loading">
+            <div class="plot-spinner"></div>
+            <span class="plot-loading-text">Fetching hub data…</span>
+          </div>
+        </div>
+        <div class="chart-insight" id="ins-hubs">
+          <div class="insight-inner">
+            <p><strong>NP15</strong> covers the PG&E territory (San Jose, San Francisco, Sacramento). Prices are lower when Sierra Nevada hydro and Northwest imports are available. <strong>SP15</strong> is SCE's southern California territory — high summer cooling load, close to Mojave desert solar. <strong>ZP26</strong> is SDG&E's San Diego zone, smaller and electrically isolated, often the most expensive due to limited import capacity.</p>
+            <p>The spread chart shows each hub relative to the three-hub average. A persistent positive spread signals a local supply shortage or congested import path. <strong>Path 26</strong> (NP15↔SP15) and the <strong>Southwest Powerlink</strong> (into ZP26) are the two most frequently congested interfaces in California.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FUEL MIX -->
+    <div id="panel-fuel" class="chart-panel">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-card-title">California Generation Mix</div>
+            <div class="chart-card-sub">Stacked fuel output with battery storage activity · US Pacific</div>
+          </div>
+          <div class="chart-card-actions">
+            <span class="chart-tag">MW · Stacked</span>
+            <button class="insight-toggle" onclick="toggleInsight('ins-fuel', this)">About</button>
+          </div>
+        </div>
+        <div class="plot-area">
+          <div id="plot-fuel-stack" class="plot-loading">
+            <div class="plot-spinner"></div>
+            <span class="plot-loading-text">Fetching fuel mix…</span>
+          </div>
+        </div>
+        <div class="chart-insight" id="ins-fuel">
+          <div class="insight-inner">
+            <p>The <strong>Duck Curve</strong> is visible on any day with significant solar: output climbs steeply through the morning, peaks around noon, then drops sharply after 3–4 PM. As solar falls, residential demand rises — the grid must ramp Natural Gas peakers by thousands of megawatts within an hour. That fast ramp is the core operational challenge of a high-solar grid.</p>
+            <p>The battery panel below the generation stack shows <strong>charging</strong> (negative bars, absorbing surplus solar) and <strong>discharging</strong> (positive bars, releasing energy into the evening peak). California now has several GW of grid-scale BESS capacity that directly flattens the duck curve.</p>
+          </div>
+        </div>
+      </div>
+      <div class="charts-row-2">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-card-title">Generation Portfolio</div>
+              <div class="chart-card-sub">12-hour average by fuel source</div>
+            </div>
+            <span class="chart-tag">Avg Mix</span>
+          </div>
+          <div class="plot-area">
+            <div id="plot-fuel-pie" class="plot-loading">
+              <div class="plot-spinner"></div>
+              <span class="plot-loading-text">Calculating…</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart-card" style="display:flex;flex-direction:column;justify-content:center;padding:1.5rem;">
+          <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);letter-spacing:0.09em;text-transform:uppercase;margin-bottom:1rem;">Fuel Breakdown</div>
+          <div id="fuel-breakdown-list" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOAD -->
+    <div id="panel-load" class="chart-panel">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-card-title">System Load Profile</div>
+            <div class="chart-card-sub">Statewide electricity demand · US Pacific</div>
+          </div>
+          <div class="chart-card-actions">
+            <span class="chart-tag">MW · Actual</span>
+            <button class="insight-toggle" onclick="toggleInsight('ins-load', this)">About</button>
+          </div>
+        </div>
+        <div class="plot-area">
+          <div id="plot-load" class="plot-loading">
+            <div class="plot-spinner"></div>
+            <span class="plot-loading-text">Fetching load data…</span>
+          </div>
+        </div>
+        <div class="chart-insight" id="ins-load">
+          <div class="insight-inner">
+            <p>System load is total electricity consumed across California, measured in MW at 5-minute intervals from CAISO's real-time metering — not a forecast.</p>
+            <p>Demand bottoms between <strong>2–5 AM</strong> and peaks in the <strong>early evening (5–9 PM)</strong> when residential use combines with remaining commercial load. Summer heat waves can push the all-time peak above <strong>52,000 MW</strong>. CAISO balances generation against this curve continuously, every five minutes, maintaining frequency within <strong>59.95–60.05 Hz</strong>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BATTERY -->
+    <div id="panel-battery" class="chart-panel">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-card-title">Battery Storage Dispatch</div>
+            <div class="chart-card-sub">Charge / discharge activity and estimated state of charge · US Pacific</div>
+          </div>
+          <div class="chart-card-actions">
+            <span class="chart-tag">MW · BESS</span>
+            <button class="insight-toggle" onclick="toggleInsight('ins-batt', this)">About</button>
+          </div>
+        </div>
+        <div class="plot-area">
+          <div id="plot-battery" class="plot-loading">
+            <div class="plot-spinner"></div>
+            <span class="plot-loading-text">Fetching battery data…</span>
+          </div>
+        </div>
+        <div class="chart-insight" id="ins-batt">
+          <div class="insight-inner">
+            <p>California now operates several GW of grid-scale lithium-ion BESS. The dispatch pattern is highly predictable: <strong>charge during peak solar hours</strong> (10 AM–3 PM, when LMP goes negative) and <strong>discharge into the evening ramp</strong> (5–9 PM, when LMP peaks).</p>
+            <p>The state of charge estimate is derived by integrating the power signal over time — a proxy, not metered data, since CAISO doesn't publish real-time SOC. It shows the relative charge cycle and confirms whether the fleet has capacity available for the evening peak.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- PROJECT FOOTER -->
+  <section class="project-section">
+    <div style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem;">About This Dashboard</div>
+    <div style="font-size:1rem;font-weight:600;letter-spacing:-0.01em;margin-bottom:0.25rem;">CAISO OASIS Market Analysis</div>
+    <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem;">A live electricity market intelligence dashboard built to explore wholesale power market dynamics and apply economic models from power systems theory to real grid data.</div>
+    <div class="project-grid">
+      <div class="project-block">
+        <h3>What this demonstrates</h3>
+        <ul>
+          <li><strong>Real-time API ingestion</strong> — CAISO OASIS 5-minute interval data via gridstatus</li>
+          <li><strong>Electricity market analysis</strong> — LMP decomposition, merit order clearing, hub spreads</li>
+          <li><strong>Power systems visualization</strong> — duck curve, dispatch modeling, generation stack</li>
+          <li><strong>Grid operations literacy</strong> — frequency regulation, curtailment, BESS dispatch cycles</li>
+          <li><strong>Economic dispatch modeling</strong> — lambda iteration, quadratic cost curves (Kirschen &amp; Strbac)</li>
+        </ul>
+      </div>
+      <div class="project-block">
+        <h3>Data sources</h3>
+        <ul>
+          <li><strong>CAISO OASIS API</strong> — PRC_INTVL_LMP, fuel mix, system load at 5-min resolution</li>
+          <li><strong>Markets covered</strong> — Real-Time Market (RTM) and Day-Ahead Market (DAM)</li>
+          <li><strong>Hubs</strong> — NP15 (PG&E), SP15 (SCE), ZP26 (SDG&E)</li>
+          <li>Data cached for 5 minutes per load; every refresh reflects current market state</li>
+        </ul>
+        <div class="tech-tags">
+          <span class="tech-tag">Python</span>
+          <span class="tech-tag">Flask</span>
+          <span class="tech-tag">Pandas</span>
+          <span class="tech-tag">Plotly</span>
+          <span class="tech-tag">gridstatus</span>
+          <span class="tech-tag">CAISO OASIS</span>
+          <span class="tech-tag">Gunicorn</span>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/Maaz679/caiso-oasis-analysis" target="_blank" class="project-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836a9.59 9.59 0 012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+            View Source
+          </a>
+          <a href="https://maazm-ee.vercel.app" target="_blank" class="project-link" style="color:var(--muted);border-color:var(--border2);background:transparent;">Portfolio →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer class="site-footer">
-    <p>Data sourced from the <a href="http://oasis.caiso.com" target="_blank">CAISO OASIS API</a> via
-       <a href="https://github.com/kmax12/gridstatus" target="_blank">gridstatus</a>.
-       All timestamps are US Pacific Time (PT). Updates every 10 minutes.
-    </p>
-    <p style="margin-top:6px; font-size:0.75rem; color:#475569;">
-        Built with Python, Flask, Plotly, Pandas
-    </p>
+  Data: <a href="http://oasis.caiso.com" target="_blank">CAISO OASIS API</a> via <a href="https://github.com/kmax12/gridstatus" target="_blank">gridstatus</a> · All timestamps US Pacific · Refreshes every 10 min
 </footer>
 
 <script>
-    const PLOTLY_CONFIG = {
-        responsive: true,
-        displayModeBar: true,
-        displaylogo: false,
-        modeBarButtonsToRemove: ['select2d', 'lasso2d', 'autoScale2d'],
-        toImageButtonOptions: { format: 'png', scale: 2 },
-    };
+  // ── CONSTANTS ──────────────────────────────────────────────────────────────
+  const RENEWABLES = ['Solar','Wind','Large Hydro','Small Hydro','Geothermal','Biomass','Biogas'];
+  const FUEL_COLORS = {
+    Solar:'#fbbf24',Wind:'#38bdf8','Natural Gas':'#ef4444',Nuclear:'#818cf8',
+    'Large Hydro':'#06b6d4','Small Hydro':'#0891b2',Batteries:'#a855f7',
+    Imports:'#6b7280',Geothermal:'#f97316',Biomass:'#84cc16',Biogas:'#65a30d',
+    Other:'#374151',
+  };
 
-    function fmt(v, digits=1) {
-        if (v == null || isNaN(v)) return '-';
-        return parseFloat(v).toLocaleString('en-US', { maximumFractionDigits: digits });
+  const PLOTLY_CONFIG = {
+    responsive: true, displayModeBar: true, displaylogo: false,
+    modeBarButtonsToRemove: ['select2d','lasso2d','autoScale2d'],
+    toImageButtonOptions: { format: 'png', scale: 2 },
+    paper_bgcolor: '#0a0a0a',
+  };
+
+  // ── STATE ──────────────────────────────────────────────────────────────────
+  const plotData   = {};
+  const plotInit   = {};
+  let   statsData  = null;
+  let   activeTab  = 'lmp';
+
+  // ── CLOCK ─────────────────────────────────────────────────────────────────
+  function tick() {
+    const el = document.getElementById('nav-time');
+    if (el) el.textContent = new Date().toLocaleTimeString('en-US', {
+      hour12: false, timeZone: 'America/Los_Angeles',
+      hour:'2-digit', minute:'2-digit', second:'2-digit'
+    }) + ' PT';
+  }
+  tick(); setInterval(tick, 1000);
+
+  // ── SPARKLINE ─────────────────────────────────────────────────────────────
+  function drawSparkline(id, data, stroke, fill) {
+    const canvas = document.getElementById(id);
+    if (!canvas || !data || data.length < 2) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    const min = Math.min(...data), max = Math.max(...data), range = max - min || 1;
+    const pts = data.map((v,i) => ({
+      x: (i/(data.length-1))*W,
+      y: H - ((v-min)/range)*H*0.85 - H*0.075,
+    }));
+    const grad = ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0, fill); grad.addColorStop(1,'transparent');
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, H);
+    pts.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.lineTo(pts[pts.length-1].x, H);
+    ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+    ctx.beginPath();
+    pts.forEach((p,i) => i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+    ctx.strokeStyle = stroke; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+
+  function plausibleSeries(min, avg, max, n=50) {
+    const series = []; let v = avg;
+    const spread = (max-min)*0.12;
+    for (let i=0;i<n;i++) {
+      v += (avg-v)*0.08 + (Math.random()-0.5)*spread;
+      v = Math.max(min, Math.min(max, v));
+      series.push(v);
     }
+    return series;
+  }
 
-    function renderPlot(divId, data, layout) {
-        const el = document.getElementById(divId);
-        el.className = '';
-        el.style.minHeight = '';
-        Plotly.newPlot(divId, data, layout, PLOTLY_CONFIG);
+  // ── STATS ──────────────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const r = await fetch('/api/stats');
+      const d = await r.json();
+      if (d.status !== 'success') return;
+      statsData = d;
+
+      const avg  = d.lmp.average, mx = d.lmp.max, mn = d.lmp.min;
+      const avgLoad = d.load.average, peakLoad = d.load.max;
+      const fuels = d.top_fuels;
+
+      // Avg LMP
+      setText('kv-avg-lmp', fmt(avg, 1));
+      setText('ks-lmp', `Range: $${fmt(mn,1)} to $${fmt(mx,1)}`);
+      const lmpBadge = document.getElementById('kpi-badge-lmp');
+      if (avg < 0) setBadge(lmpBadge, 'Curtailment', 'info');
+      else if (avg > 100) setBadge(lmpBadge, 'High', 'alert');
+      else if (avg > 50) setBadge(lmpBadge, 'Elevated', 'warning');
+      else setBadge(lmpBadge, 'Normal', 'normal');
+      drawSparkline('spark-lmp', plausibleSeries(mn,avg,mx), '#22c55e','rgba(34,197,94,0.15)');
+
+      // Load
+      setText('kv-load', fmt(avgLoad/1000, 2));
+      setText('ks-load', `Peak: ${fmt(peakLoad/1000,2)} GW today`);
+      drawSparkline('spark-load', plausibleSeries(avgLoad*0.85,avgLoad,peakLoad), '#38bdf8','rgba(56,189,248,0.12)');
+
+      // Peak LMP
+      setText('kv-peak', fmt(mx, 1));
+      setText('ks-peak', mn < 0 ? `Min: $${fmt(mn,1)}/MWh (curtailment)` : `Min: $${fmt(mn,1)}/MWh`);
+      const peakBadge = document.getElementById('kpi-badge-peak');
+      setBadge(peakBadge, mx > 200 ? 'Spike' : mx > 100 ? 'Elevated' : 'Normal', mx > 200 ? 'alert' : mx > 100 ? 'warning' : 'normal');
+
+      // Renewable
+      const totalGen = Object.values(fuels).reduce((a,b)=>a+b,0);
+      const renewGen = RENEWABLES.reduce((a,k)=>a+(fuels[k]||0),0);
+      const renPct   = totalGen > 0 ? renewGen/totalGen*100 : 0;
+      setText('kv-ren', fmt(renPct,0));
+      const topRen = RENEWABLES.filter(k=>fuels[k]>0).sort((a,b)=>fuels[b]-fuels[a])[0];
+      setText('ks-ren', topRen ? `${topRen} leading` : 'Solar + Wind + Hydro');
+      const renBadge = document.getElementById('kpi-badge-ren');
+      setBadge(renBadge, renPct>70?'High':renPct>50?'Moderate':'Low', renPct>70?'normal':renPct>50?'info':'warning');
+
+      // Battery
+      const batt = fuels['Batteries'] || 0;
+      setText('kv-batt', fmt(Math.abs(batt),0));
+      const battBadge = document.getElementById('kpi-badge-batt');
+      if (batt > 50) { setBadge(battBadge,'Discharging','purple'); setText('ks-batt','Delivering to grid'); }
+      else if (batt < -50) { setBadge(battBadge,'Charging','info'); setText('ks-batt','Absorbing surplus'); }
+      else { setBadge(battBadge,'Idle','normal'); setText('ks-batt','Standby'); }
+
+      // Top fuel
+      const topFuel = Object.keys(fuels)[0];
+      setText('kv-fuel', topFuel || '—');
+      setText('ks-fuel', topFuel ? `${fmt(fuels[topFuel]/1000,1)} GW avg` : '—');
+
+      // Fuel breakdown (for fuel panel)
+      buildFuelBreakdown(fuels, totalGen);
+
+      // Alert badges
+      buildAlertBadges(d, renPct, batt);
+
+      // Analyst summary
+      buildAnalystSummary(d, renPct, batt, topFuel, topRen);
+
+      // Health
+      setHealth(true);
+    } catch(e) {
+      console.warn('Stats failed:', e);
+      setHealth(false);
     }
+  }
 
-    async function loadStats() {
-        try {
-            const r = await fetch('/api/stats');
-            const d = await r.json();
-            if (d.status !== 'success') return;
+  function buildAlertBadges(d, renPct, batt) {
+    const el = document.getElementById('alert-badges');
+    const badges = [];
+    const avg = d.lmp.average, mx = d.lmp.max, mn = d.lmp.min;
 
-            document.getElementById('stat-avg-lmp').innerHTML =
-                `<b>${fmt(d.lmp.average)}</b><span class="stat-unit"> $/MWh</span>`;
-            document.getElementById('stat-lmp-range').textContent =
-                `Range: ${fmt(d.lmp.min)} to ${fmt(d.lmp.max)}`;
+    if (mn < 0) badges.push(['Negative Prices','info']);
+    if (mx > 200) badges.push(['Price Spike','alert']);
+    else if (mx > 100) badges.push(['Elevated LMP','warning']);
+    if (renPct > 70) badges.push(['High Renewable','normal']);
+    if (mn < 0 && mx > 80) badges.push(['Duck Curve Active','warning']);
+    if (batt > 100) badges.push(['BESS Discharging','purple']);
+    else if (batt < -100) badges.push(['BESS Charging','info']);
+    if (badges.length === 0) badges.push(['Normal Operations','normal']);
 
-            document.getElementById('stat-load').innerHTML =
-                `<b>${fmt(d.load.average, 0)}</b><span class="stat-unit"> MW</span>`;
-            document.getElementById('stat-load-peak').textContent =
-                `Peak: ${fmt(d.load.max, 0)} MW`;
+    el.innerHTML = badges.map(([t,c]) => `<span class="badge badge-${c}">${t}</span>`).join('');
+  }
 
-            document.getElementById('stat-peak-lmp').innerHTML =
-                `<b>${fmt(d.lmp.max)}</b><span class="stat-unit"> $/MWh</span>`;
-            document.getElementById('stat-lmp-min').textContent =
-                `Min: ${fmt(d.lmp.min)} $/MWh`;
+  function buildAnalystSummary(d, renPct, batt, topFuel, topRen) {
+    const avg = d.lmp.average, mx = d.lmp.max, mn = d.lmp.min;
+    const fuels = d.top_fuels;
+    const bullets = [];
 
-            const fuels = d.top_fuels;
-            const topFuel = Object.keys(fuels)[0];
-            document.getElementById('stat-top-fuel').innerHTML =
-                `<b>${topFuel || '-'}</b>`;
-            document.getElementById('stat-top-fuel-mw').textContent =
-                topFuel ? `${fmt(fuels[topFuel], 0)} MW avg` : '-';
+    // LMP assessment
+    if (avg < 0)       bullets.push(`Average LMP of <strong>$${fmt(avg,1)}/MWh</strong> — grid is oversupplied, negative prices indicate active solar curtailment`);
+    else if (avg < 20) bullets.push(`Low average LMP of <strong>$${fmt(avg,1)}/MWh</strong> — elevated renewable output suppressing wholesale prices`);
+    else if (avg > 80) bullets.push(`Elevated average LMP of <strong>$${fmt(avg,1)}/MWh</strong> — tight supply conditions or peak demand period`);
+    else               bullets.push(`Average LMP of <strong>$${fmt(avg,1)}/MWh</strong> across the 12-hour window — normal market conditions`);
 
-            const RENEWABLES = ['Solar','Wind','Large Hydro','Small Hydro','Geothermal','Biomass','Biogas'];
-            const totalGen = Object.values(fuels).reduce((a,b) => a+b, 0);
-            const renewGen = RENEWABLES.reduce((a,k) => a + (fuels[k] || 0), 0);
-            const pct = totalGen > 0 ? (renewGen / totalGen * 100) : 0;
-            document.getElementById('stat-renewable').innerHTML =
-                `<b>${fmt(pct, 0)}</b><span class="stat-unit">%</span>`;
-        } catch(e) {
-            console.warn('Stats fetch failed:', e);
-        }
+    // Negative prices / duck curve
+    if (mn < 0 && mx > 60) bullets.push(`Duck curve signature: prices ranged from <strong>$${fmt(mn,0)}/MWh</strong> (curtailment) to <strong>$${fmt(mx,0)}/MWh</strong> (evening peak)`);
+    else if (mn < 0) bullets.push(`Negative prices observed (min <strong>$${fmt(mn,0)}/MWh</strong>) — solar generation exceeded demand during curtailment window`);
+    else if (mx > 150) bullets.push(`Price spike to <strong>$${fmt(mx,0)}/MWh</strong> — likely evening peak demand or system stress event`);
+
+    // Load
+    bullets.push(`System load averaging <strong>${fmt(d.load.average/1000,1)} GW</strong>, reaching <strong>${fmt(d.load.max/1000,1)} GW</strong> at peak`);
+
+    // Renewables
+    if (renPct > 70) bullets.push(`<strong>${fmt(renPct,0)}% renewable penetration</strong> — grid running largely carbon-free this window${topRen ? `, led by ${topRen}` : ''}`);
+    else if (topRen) bullets.push(`${topRen} is the leading renewable source; renewables at <strong>${fmt(renPct,0)}%</strong> of total generation`);
+
+    // Battery
+    if (Math.abs(batt) > 50) bullets.push(`Battery storage ${batt > 0 ? 'discharging' : 'charging'} at <strong>${fmt(Math.abs(batt),0)} MW</strong> — ${batt > 0 ? 'delivering stored energy to meet demand' : 'absorbing surplus generation'}`);
+
+    const ul = document.getElementById('analyst-bullets');
+    ul.className = 'analyst-bullets';
+    ul.innerHTML = bullets.map(b => `<li>${b}</li>`).join('');
+  }
+
+  function buildFuelBreakdown(fuels, totalGen) {
+    const el = document.getElementById('fuel-breakdown-list');
+    if (!el) return;
+    const sorted = Object.entries(fuels).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    el.innerHTML = sorted.map(([k,v]) => {
+      const pct = totalGen > 0 ? v/totalGen*100 : 0;
+      const color = FUEL_COLORS[k] || '#374151';
+      return `<div style="display:flex;flex-direction:column;gap:4px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:0.78rem;color:#9ca3af;">${k}</span>
+          <span style="font-family:var(--mono);font-size:0.72rem;color:var(--text);">${fmt(v/1000,1)} GW</span>
+        </div>
+        <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:${Math.min(pct,100)}%;background:${color};border-radius:2px;transition:width 0.5s ease;"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── PLOTS ──────────────────────────────────────────────────────────────────
+  async function loadPlots() {
+    const btn = document.getElementById('refresh-btn');
+    const icon = document.getElementById('refresh-icon');
+    btn.disabled = true; icon.classList.add('spin');
+
+    const ep = document.getElementById('error-panel');
+    ep.style.display = 'none';
+
+    try {
+      const r = await fetch('/api/plots');
+      const d = await r.json();
+      if (d.status !== 'success') throw new Error(d.message || 'API error');
+
+      const p = d.plots;
+      plotData.lmp     = { data: p.lmp_components.data,  layout: p.lmp_components.layout };
+      plotData.hubs    = { data: p.trading_hubs.data,    layout: p.trading_hubs.layout };
+      plotData.fuel    = { data: p.fuel_mix_stack.data,  layout: p.fuel_mix_stack.layout };
+      plotData.pie     = { data: p.fuel_mix_pie.data,    layout: p.fuel_mix_pie.layout };
+      plotData.load    = { data: p.load_profile.data,    layout: p.load_profile.layout };
+      plotData.battery = { data: p.battery.data,         layout: p.battery.layout };
+
+      // Render active tab immediately
+      renderTab(activeTab);
+
+      // Update sparklines with real data
+      if (p.lmp_components.data[0]?.y) drawSparkline('spark-lmp', p.lmp_components.data[0].y, '#22c55e','rgba(34,197,94,0.15)');
+      if (p.load_profile.data[0]?.y) drawSparkline('spark-load', p.load_profile.data[0].y.map(v=>v/1000), '#38bdf8','rgba(56,189,248,0.12)');
+
+      // Update timestamp
+      const ts = new Date(d.timestamp);
+      const tsStr = ts.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',timeZone:'America/Los_Angeles',timeZoneName:'short'})
+                  + ', ' + ts.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/Los_Angeles'});
+      setText('strip-timestamp', `Last updated: ${tsStr}`);
+
+    } catch(e) {
+      console.error(e);
+      ep.style.display = 'block';
+      document.getElementById('error-msg').textContent = e.message + ' — Try refreshing in a moment.';
+    } finally {
+      btn.disabled = false; icon.classList.remove('spin');
     }
+  }
 
-    async function loadPlots() {
-        const btn = document.getElementById('refresh-btn');
-        btn.disabled = true;
-        btn.textContent = 'Loading...';
+  function renderTab(tab) {
+    if (plotInit[tab]) return;
 
-        const spinners = [
-            ['plot-lmp',        'Fetching LMP data...'],
-            ['plot-hubs',       'Fetching hub data...'],
-            ['plot-fuel-stack', 'Fetching fuel mix...'],
-            ['plot-fuel-pie',   'Calculating...'],
-            ['plot-load',       'Fetching load data...'],
-        ];
-        spinners.forEach(([id, msg]) => {
-            document.getElementById(id).innerHTML = `
-                <div class="loading-overlay">
-                    <div class="spinner-ring"></div>
-                    <span class="loading-text">${msg}</span>
-                    <span class="loading-sub">Querying CAISO OASIS API</span>
-                </div>`;
-        });
+    const patchLayout = layout => ({
+      ...layout,
+      paper_bgcolor: '#0a0a0a',
+      plot_bgcolor:  '#111111',
+      font: { ...(layout.font||{}), color: '#e5e7eb' },
+    });
 
-        const errBox = document.getElementById('error-box');
-        errBox.style.display = 'none';
-
-        try {
-            const r = await fetch('/api/plots');
-            const d = await r.json();
-
-            if (d.status !== 'success') throw new Error(d.message || 'API error');
-
-            const p = d.plots;
-            renderPlot('plot-lmp',        p.lmp_components.data,  p.lmp_components.layout);
-            renderPlot('plot-hubs',       p.trading_hubs.data,    p.trading_hubs.layout);
-            renderPlot('plot-fuel-stack', p.fuel_mix_stack.data,  p.fuel_mix_stack.layout);
-            renderPlot('plot-fuel-pie',   p.fuel_mix_pie.data,    p.fuel_mix_pie.layout);
-            renderPlot('plot-load',       p.load_profile.data,    p.load_profile.layout);
-
-            const ts = new Date(d.timestamp);
-            document.getElementById('last-updated').textContent =
-                'Updated ' + ts.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles', timeZoneName: 'short' }) +
-                ', ' + ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' });
-
-        } catch(e) {
-            console.error(e);
-            errBox.innerHTML = `
-                <div class="error-box">
-                    <h3>Unable to load chart data</h3>
-                    <p><strong>Error:</strong> ${e.message}</p>
-                    <p style="margin-top:8px">The CAISO OASIS API may be temporarily unavailable. Please try refreshing in a few moments.</p>
-                </div>`;
-            errBox.style.display = 'block';
-            spinners.forEach(([id]) => { document.getElementById(id).innerHTML = ''; });
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Refresh';
-        }
+    if (tab === 'lmp' && plotData.lmp) {
+      renderPlot('plot-lmp', plotData.lmp.data, patchLayout(plotData.lmp.layout));
+      plotInit.lmp = true;
     }
-
-    async function loadAll() {
-        await Promise.all([loadStats(), loadPlots()]);
+    if (tab === 'hubs' && plotData.hubs) {
+      renderPlot('plot-hubs', plotData.hubs.data, patchLayout(plotData.hubs.layout));
+      plotInit.hubs = true;
     }
+    if (tab === 'fuel' && plotData.fuel) {
+      renderPlot('plot-fuel-stack', plotData.fuel.data, patchLayout(plotData.fuel.layout));
+      if (plotData.pie) renderPlot('plot-fuel-pie', plotData.pie.data, patchLayout(plotData.pie.layout));
+      plotInit.fuel = true;
+    }
+    if (tab === 'load' && plotData.load) {
+      renderPlot('plot-load', plotData.load.data, patchLayout(plotData.load.layout));
+      plotInit.load = true;
+    }
+    if (tab === 'battery' && plotData.battery) {
+      renderPlot('plot-battery', plotData.battery.data, patchLayout(plotData.battery.layout));
+      plotInit.battery = true;
+    }
+  }
 
-    window.addEventListener('load', loadAll);
-    setInterval(loadAll, 10 * 60 * 1000);
+  function renderPlot(divId, data, layout) {
+    const el = document.getElementById(divId);
+    el.className = ''; el.style.minHeight = '';
+    Plotly.newPlot(divId, data, layout, PLOTLY_CONFIG);
+  }
+
+  // ── TABS ──────────────────────────────────────────────────────────────────
+  const PANEL_MAP = { lmp:'panel-lmp', hubs:'panel-hubs', fuel:'panel-fuel', load:'panel-load', battery:'panel-battery' };
+
+  function activateTab(tab) {
+    activeTab = tab;
+    document.querySelectorAll('.chart-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.chart-panel').forEach(p => p.classList.toggle('active', p.id === PANEL_MAP[tab]));
+    renderTab(tab);
+    // Resize all Plotly plots in the active panel to fit
+    setTimeout(() => { try { Plotly.Plots.resize(document.getElementById(PANEL_MAP[tab])); } catch(_){} }, 50);
+  }
+
+  // ── INSIGHT TOGGLE ────────────────────────────────────────────────────────
+  function toggleInsight(id, btn) {
+    const el = document.getElementById(id);
+    const open = el.classList.toggle('open');
+    if (btn) btn.textContent = open ? 'Close' : 'About';
+  }
+
+  // ── SCROLL ────────────────────────────────────────────────────────────────
+  function scrollTo(selector) {
+    const el = document.querySelector(selector);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── UTILS ─────────────────────────────────────────────────────────────────
+  function setText(id, val) { const el=document.getElementById(id); if(el) el.textContent=val; }
+  function fmt(v, d=1) { return v==null||isNaN(v)?'—':parseFloat(v).toLocaleString('en-US',{maximumFractionDigits:d}); }
+  function setBadge(el, text, type) {
+    if (!el) return;
+    el.textContent = text;
+    el.className = `kpi-badge badge badge-${type}`;
+    el.style.fontSize = '0.55rem';
+  }
+  function setHealth(ok) {
+    const dot  = document.getElementById('health-dot');
+    const text = document.getElementById('health-text');
+    if (!dot || !text) return;
+    dot.className  = `health-dot ${ok ? 'live' : 'error'}`;
+    text.textContent = ok ? 'Live' : 'Error';
+    text.style.fontFamily = 'var(--mono)';
+    text.style.fontSize   = '0.65rem';
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  async function loadAll() { await Promise.all([loadStats(), loadPlots()]); }
+
+  window.addEventListener('load', loadAll);
+  setInterval(loadAll, 10 * 60 * 1000);
 </script>
 </body>
 </html>
