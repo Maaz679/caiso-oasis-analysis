@@ -26,6 +26,7 @@ app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 FETCH_HOURS = 6
+DATA_LAG_HOURS = 2  # CAISO OASIS doesn't publish RTM data until ~1-2h after the fact
 CACHE_TTL = 300  # seconds
 
 _cache = {}
@@ -34,7 +35,7 @@ _cache_lock = threading.Lock()
 
 def _fetch_fresh():
     """Pull all four data series from CAISO. Called only when cache is cold."""
-    end = datetime.now()
+    end = datetime.now() - timedelta(hours=DATA_LAG_HOURS)
     start = end - timedelta(hours=FETCH_HOURS)
     with CAISOClient() as client:
         trading_hub_lmp = client.get_trading_hub_lmp(start, end, market="RTM")
