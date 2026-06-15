@@ -226,7 +226,7 @@ def plot_fuel_mix(fuel_df: pd.DataFrame) -> go.Figure:
     fig.update_yaxes(title_text='MW', row=2, col=1)
     fig.update_layout(
         **_BASE_LAYOUT, height=640, showlegend=True, barmode='relative',
-        legend=dict(**_LEGEND, orientation='v', yanchor='top', y=1, xanchor='left', x=1.01, font=dict(size=11)),
+        legend=dict(**{**_LEGEND, 'font': dict(size=11)}, orientation='v', yanchor='top', y=1, xanchor='left', x=1.01),
         margin=dict(l=60, r=160, t=90, b=50),
     )
     _dark_annotations(fig)
